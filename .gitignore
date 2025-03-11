@@ -1,7 +1,20 @@
+# Node modules (library hasil install)
+node_modules/
 
-# Ignore environment files
+# Environment variables (data sensitif)
 .env
-# Ignore IDE and system files
+.env.development
 
-*.vscode/
+# Cache & Build Files
+.vscode/
+dist/
+out/
+.cache/
 
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependencies Lock File (opsional, kecuali mau dikunci versinya)
+package-lock.json
