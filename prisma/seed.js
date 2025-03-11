@@ -1,5 +1,9 @@
-import { PrismaClient } from "@prisma/client";
-import * as bcrypt from "bcrypt";
+
+
+const { PrismaClient } = require("@prisma/client");
+
+// import * as bcrypt from "bcrypt";
+const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
 
@@ -12,6 +16,7 @@ async function main() {
     if (!adminCheck) {
         // Hash password
         const hashedPassword = await bcrypt.hash("admin123", 10);
+        const penghunihashedPassword = await bcrypt.hash("user123", 10);
 
         // Buat akun admin
         await prisma.user.create({
@@ -22,6 +27,15 @@ async function main() {
             role: "admin",
         },
         });
+
+        await prisma.user.create({
+            data: {
+                username: "userRaka",
+                email: "user@gmail.com",
+                password: penghunihashedPassword,
+                role: "penghuni",
+            },
+            });
 
         console.log("✅ Admin berhasil dibuat!");
     } else {
