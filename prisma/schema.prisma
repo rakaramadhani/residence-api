@@ -25,6 +25,7 @@ model User {
     broadcast Broadcast[]
     anggota Anggota[]
     kendala Kendala[]
+    panic Panic[]
 }
 enum Role {
     penghuni
@@ -122,4 +123,13 @@ enum StatusKendala {
 model Peraturan {
     id Int @id @default(autoincrement())
     peraturan String
+}
+
+// Panic
+model Panic {
+    id Int @id @default(autoincrement())
+    user   User @relation(fields: [userId], references: [id])
+    userId Int
+    created_at DateTime @default(now())
+    updatedAt  DateTime   @updatedAt
 }
