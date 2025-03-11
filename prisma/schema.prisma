@@ -1,0 +1,125 @@
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+    directUrl = env("DIRECT_URL")
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+// User Data
+model User {
+    id    Int     @id @default(autoincrement())
+    createdAt  DateTime   @default(now())
+    updatedAt  DateTime   @updatedAt
+    email String  @unique
+    username  String?
+    password String
+    role  Role @default(penghuni)
+    blok_rumah String
+    tipe_rumah TipeRumah
+    isVerified Boolean
+    feedback String
+    iuran Iuran[]
+    broadcast Broadcast[]
+    anggota Anggota[]
+    kendala Kendala[]
+}
+enum Role {
+    penghuni
+    admin
+}
+enum TipeRumah {
+    ChairaTownHouse
+    GrandCeleste
+    Calosa
+}
+
+// Data Iuran
+model Iuran {
+    id Int @id @default(autoincrement())
+    user   User @relation(fields: [userId], references: [id])
+    userId Int
+    tanggal_iuran DateTime
+    tanggal_jatuh_tempo DateTime
+    createdAt  DateTime   @default(now())
+    bukti_bayar String
+    status_bayar StatusBayar
+    feedback String
+}
+
+enum StatusBayar {
+    verifikasi
+    lunas
+}
+
+// BroadCast Data
+model Broadcast {
+    id Int @id @default(autoincrement())
+    user   User @relation(fields: [userId], references: [id])
+    userId Int
+    broadcast String
+    tanggal_acara DateTime
+    status_broadcast StatusBroadcast @default(uploaded)
+    feedback String
+    createdAt  DateTime   @default(now())
+}
+
+enum StatusBroadcast {
+    uploaded
+    verifying
+    approved
+}
+
+// Data Anggota Keluarga
+model Anggota {
+    id Int @id @default(autoincrement())
+    user   User @relation(fields: [userId], references: [id])
+    userId Int
+    nama String
+    nik Int
+    gender Gender
+    tempat_lahir String
+    tanggal_lahir DateTime
+    ktp String
+}
+
+enum Gender {
+    Pria
+    Wanita
+}
+
+// Kendala
+
+model Kendala {
+    id Int @id @default(autoincrement())
+    user   User @relation(fields: [userId], references: [id])
+    userId Int
+    kendala String
+    kategori Kategori
+    status_kendala StatusKendala
+    feedback String
+    created_at DateTime @default(now())
+    updatedAt  DateTime   @updatedAt
+}
+
+enum Kategori {
+    Keamanan
+    Infrastruktur
+    Kebersihan
+    Pelayanan
+    Lainnya
+}
+
+enum StatusKendala {
+    PengajuanBaru
+    Ditangani
+    Selesai
+}
+
+// Peraturan
+model Peraturan {
+    id Int @id @default(autoincrement())
+    peraturan String
+}
