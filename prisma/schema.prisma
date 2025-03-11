@@ -17,10 +17,10 @@ model User {
     username  String?
     password String
     role  Role @default(penghuni)
-    blok_rumah String
-    tipe_rumah TipeRumah
-    isVerified Boolean
-    feedback String
+    blok_rumah String?
+    tipe_rumah TipeRumah?
+    isVerified Boolean?
+    feedback String?
     iuran Iuran[]
     broadcast Broadcast[]
     anggota Anggota[]

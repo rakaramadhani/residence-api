@@ -16,10 +16,10 @@ async function main() {
         // Buat akun admin
         await prisma.user.create({
         data: {
-            nama: "Admin Perumahan",
-            email: "admin@example.com",
+            username: "Admin Raka",
+            email: "admin@gmail.com",
             password: hashedPassword,
-            role: "ADMIN",
+            role: "admin",
         },
         });
 
