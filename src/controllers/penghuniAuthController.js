@@ -9,12 +9,13 @@ dotenv.config();
 
 app.use(express.json());
 
-const secret = process.env.SECRET_KEY;
+
+
 
 // login user
-const loginUser = async (req, res) => {
+const login = async (req, res) => {
   const { email, password } = req.body;
-
+  const secret = process.env.SECRET_KEY;
   try {
     // cari user berdasarkan email
     const user = await prisma.user.findUnique({
@@ -25,16 +26,21 @@ const loginUser = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    // cek password
+    if (user.role !== "penghuni") {
+      return res.status(403).json({ message: "Access denied: Only penghuni can login" });
+    }
+    
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
+    if (!isMatch && !role) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    // Generate JWT token
-    const token = jwt.sign({ id: user.id }, secret, { expiresIn: "1h" });
+    const token = jwt.sign(
+                { id: user.id, role: "penghuni" },
+                secret,
+                { expiresIn: "1d" }
+            );
 
-    // Send response
     return res.json({
       token,
       data: {
@@ -49,4 +55,17 @@ const loginUser = async (req, res) => {
   }
 };
 
-module.exports = { loginUser };
+const userDetails = async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { email: req.user.email } });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+  }
+
+  res.status(200).json({ message: "User Details", data: user });
+  } catch (error) {
+    
+  }
+}
+
+module.exports = { login, userDetails };

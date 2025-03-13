@@ -10,22 +10,25 @@ const prisma = new PrismaClient();
 async function main() {
     // Ngecek Admin
     const adminCheck = await prisma.user.findUnique({
-        where: { email: "admin@example.com" },
+        where: { email: "admin@gmail.com"},
+    });
+    const userCheck = await prisma.user.findUnique({
+        where: { email: "admin@gmail.com"},
     });
 
-    if (!adminCheck) {
+    if (!adminCheck && !userCheck) {
         // Hash password
-        const hashedPassword = await bcrypt.hash("admin123", 10);
+        const adminHashedPassword = await bcrypt.hash("admin123", 10);
         const penghunihashedPassword = await bcrypt.hash("user123", 10);
 
         // Buat akun admin
         await prisma.user.create({
-        data: {
-            username: "Admin Raka",
-            email: "admin@gmail.com",
-            password: hashedPassword,
-            role: "admin",
-        },
+            data: {
+                username: "Admin Raka",
+                email: "admin@gmail.com",
+                password: adminHashedPassword,
+                role: "admin",
+            },
         });
 
         await prisma.user.create({
@@ -35,13 +38,18 @@ async function main() {
                 password: penghunihashedPassword,
                 role: "penghuni",
             },
-            });
+        });
 
-        console.log("✅ Admin berhasil dibuat!");
+        console.log("✅ Admin dan User berhasil dibuat!");
     } else {
-        console.log("⚠️ Admin sudah ada, tidak perlu membuat lagi.");
+        if (adminCheck) {
+            console.log("⚠️ Admin sudah ada, tidak perlu membuat lagi.");
+        }
+        if (userCheck) {
+            console.log("⚠️ User sudah ada, tidak perlu membuat lagi.");
+        }
     }
-    }
+}
 
 main()
     .catch((e) => {

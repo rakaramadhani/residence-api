@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 const { PrismaClient } = require('@prisma/client');
+const { authenticateAdmin } = require('../middleware/authAdmin');
 
 const app = express();
 const prisma = new PrismaClient();
@@ -10,24 +11,24 @@ dotenv.config();
 
 app.use(express.json());
 
-const secret = process.env.SECRET_KEY;
 
 // Login Admin
-const loginAdmin = async (req, res) => {
+const adminLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
-
+        const secret = process.env.SECRET_KEY;
         // Validasi input
         if (!email || !password) {
             return res.status(400).json({ message: "Email and password are required" });
         }
 
-        // Cari user berdasarkan email
+        // Cek user
         const user = await prisma.user.findUnique({ where: { email } });
-
-        // Jika user tidak ditemukan
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
+        }
+        if (user.role !== "admin") {
+            return res.status(403).json({ message: "Access denied: Only admin can login" });
         }
 
         // Jika password belum di-set
@@ -43,8 +44,10 @@ const loginAdmin = async (req, res) => {
 
         // Buat token JWT
         const token = jwt.sign(
-            { id: user.id, role: "admin" },
-            process.env.SECRET_KEY,
+            {   id: user.id, 
+                role: "admin" 
+            }, 
+            secret,
             { expiresIn: "7d" }
         );
 
@@ -59,10 +62,24 @@ const loginAdmin = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Login Error: ", error); // ✅ Log error di terminal
+        console.error("Login Error: ", error);
         return res.status(500).json({ error: 'Internal server error' });
     }
 }
 
+const users = async (req, res) => {
+    try {
+        const allUsers = await prisma.user.findMany({
+            where: {
+                role: "penghuni"
+            }
+        });
 
-module.exports = { loginAdmin };
+        res.status(200).json({ message: "Success", data: allUsers });
+    } catch (error) {
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+};
+
+
+module.exports = { adminLogin, users };
