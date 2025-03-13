@@ -71,4 +71,14 @@ const userDetails = async (req, res) => {
   }
 }
 
-module.exports = { login, userDetails };
+const logout = async (req, res) => {
+  try {
+    res.clearCookie("token"); // Hapus token dari cookie jika menggunakan HTTP-only cookies
+    return res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = { login, userDetails ,logout };
