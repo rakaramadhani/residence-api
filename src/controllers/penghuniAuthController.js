@@ -9,15 +9,11 @@ dotenv.config();
 
 app.use(express.json());
 
-
-
-
 // login user
 const login = async (req, res) => {
   const { email, password } = req.body;
   const secret = process.env.SECRET_KEY;
   try {
-    // cari user berdasarkan email
     const user = await prisma.user.findUnique({
       where: { email: email },
     });
@@ -31,7 +27,7 @@ const login = async (req, res) => {
     }
     
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch && !role) {
+    if (!isMatch) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
@@ -57,14 +53,21 @@ const login = async (req, res) => {
 
 const userDetails = async (req, res) => {
   try {
-    const user = await prisma.user.findUnique({ where: { email: req.user.email } });
+    const user = await prisma.user.findUnique({ where: { id: req.user.id },select: {
+      id: true,
+      username: true,
+      email: true,
+      blok_rumah:true,
+      tipe_rumah:true
+    } });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
-  }
+    }
 
-  res.status(200).json({ message: "User Details", data: user });
+    res.status(200).json({ message: "User Details", data: user });
   } catch (error) {
-    
+    console.error(error); 
+    return res.status(500).json({ message: "Server error" }); // Return a server error response
   }
 }
 
