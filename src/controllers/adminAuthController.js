@@ -3,7 +3,6 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 const { PrismaClient } = require('@prisma/client');
-const { authenticateAdmin } = require('../middleware/authAdmin');
 
 const app = express();
 const prisma = new PrismaClient();
@@ -67,19 +66,17 @@ const adminLogin = async (req, res) => {
     }
 }
 
-const users = async (req, res) => {
-    try {
-        const allUsers = await prisma.user.findMany({
-            where: {
-                role: "penghuni"
-            }
-        });
 
-        res.status(200).json({ message: "Success", data: allUsers });
+
+const logout = async (req, res) => {
+    try {
+        res.clearCookie("token");
+        return res.status(200).json({ message: "Logout successful" });
     } catch (error) {
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
+        console.error(error);
+        return res.status(500).json({ message: "Server error" });
     }
 };
 
 
-module.exports = { adminLogin, users };
+module.exports = { adminLogin, logout };
