@@ -17,3 +17,5 @@ yarn-error.log*
 
 # Dependencies Lock File (opsional, kecuali mau dikunci versinya)
 package-lock.json
+
+.vercel

@@ -2,11 +2,11 @@ const express = require('express');
 
 const dotenv = require('dotenv');
 dotenv.config();
-
+const  cors = require('cors')
 const app = express();
 
 app.use(express.json())
-
+app.use(cors())
 
 const adminAuthRoutes = require("./routes/adminAuthRoutes");
 const userAuthRoutes = require("./routes/penghuniAuthRoutes");

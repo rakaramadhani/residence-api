@@ -66,7 +66,18 @@ const adminLogin = async (req, res) => {
     }
 }
 
-
+const userDetails = async (req, res) => {
+    try {
+        const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+        if (!user) {
+        return res.status(404).json({ message: "User not found" });
+        }
+        res.status(200).json({ message: "User Details", data: user });
+    } catch (error) {
+        console.error(error); 
+        return res.status(500).json({ message: "Server error" });
+    }
+}
 
 const logout = async (req, res) => {
     try {
@@ -79,4 +90,4 @@ const logout = async (req, res) => {
 };
 
 
-module.exports = { adminLogin, logout };
+module.exports = { adminLogin, logout, userDetails };
