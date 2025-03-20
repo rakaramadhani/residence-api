@@ -9,10 +9,12 @@ app.use(express.json())
 app.use(cors())
 
 const adminAuthRoutes = require("./routes/adminAuthRoutes");
-const userAuthRoutes = require("./routes/penghuniAuthRoutes");
+const userAuthRoutes = require("./routes/penghuni/penghuniAuthRoutes");
+const userRoutes = require("./routes/penghuni/penghuniRoutes");
 
 app.use("/api", adminAuthRoutes);
 app.use("/api",userAuthRoutes);
+app.use("/api",userRoutes);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
