@@ -1,84 +1,79 @@
-const { createClient } = require('@supabase/supabase-js');
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
-const subscribeToKendalaChanges = () => {
-    const channel = supabase
-      .channel('schema-db-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE', // Bisa diganti dengan UPDATE atau DELETE jika perlu
-          schema: 'public',
-          table: 'kendala',
-        },
-        async (payload) => {
-          console.log('Perubahan pada tabel kendala:', payload);
-          
-          // Opsional: Bisa kirim notifikasi atau trigger proses lain di backend
-        }
-      )
-      .subscribe();
-    
-    console.log('Listening for changes on "kendala" table...');
-  };
-  
-  // Panggil fungsi subscribe saat server berjalan
-  subscribeToKendalaChanges();
-  
+const dotenv = require("dotenv");
+dotenv.config(); // Load dotenv di awal
+const { createClient } = require("@supabase/supabase-js");
+const { PrismaClient } = require("@prisma/client");
 
+// Pastikan env terbaca
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+const prisma = new PrismaClient();
+
+
+// Get Kendala tiap User
 const getKendala = async (req, res) => {
     try {
         const { user_id } = req.params;
-
-        
         const data = await prisma.kendala.findMany({
             where: { userId: user_id }
         });
-
         if (!data.length) {
             return res.status(404).json({ message: "No data found" });
         }
-
         res.status(200).json({ message: "Success", data });
-
-  
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
 
+// Buat Kendala
 const createKendala = async (req, res) => {
+    const { userId, kendala, kategori } = req.body;
     try {
-        const { user_id } = req.params;
-        const newKendalaData = await prisma.kendala.create({
-            data: { ...req.body, userId: user_id } 
+        // Simpan data ke database
+        const newKendala = await prisma.kendala.create({
+        data: {
+            userId,
+            kendala,
+            kategori,
+        },
         });
-        res.status(201).json({ message: "Success", data: newKendalaData });
-    } catch (error) {
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
-    }
 
+        const response = await supabase.channel("all_changes").send({
+            type: "broadcast",
+            event: "new_kendala",
+            payload: newKendala,
+        });
+
+        console.log("Supabase Event Sent:", response);
+
+
+        res.status(201).json({ success: true, data: newKendala });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
 };
 
 const updateKendala = async (req, res) => {
+    const { id } = req.params;
+    const { status_kendala } = req.body;
+
     try {
-        const { user_id, kendala_id } = req.params;
-
-        
-        const { status_kendala, ...updateData } = req.body;
-
         const updatedKendala = await prisma.kendala.update({
-            where: { 
-                id: kendala_id, 
-                userId: user_id 
-            },
-            data: updateData // Hanya update data tanpa `status_kendala`
+            where: { id: parseInt(id) },
+            data: { status_kendala },
         });
 
-        res.status(200).json({ message: "Success", data: updatedKendala });
+        // Kirim event realtime ke Supabase
+        const response = await supabase.channel("all_changes").send({
+            type: "broadcast",
+            event: "updated_kendala",
+            payload: updateKendala,
+        });
+
+        console.log("Supabase Event Sent:", response);
+
+        res.status(200).json({ success: true, data: updatedKendala });
     } catch (error) {
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
@@ -88,6 +83,13 @@ const deleteKendala = async (req, res) => {
         const deleted = await prisma.kendala.delete({
             where: { id: kendala_id, userId: user_id }
         });
+        const response = await supabase.channel("all_changes").send({
+            type: "broadcast",
+            event: "deleted",
+            payload: deleted,
+        });
+
+        console.log("Supabase Event Sent:", response);
         res.status(200).json({ message: "Success" });
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error", error: error.message });

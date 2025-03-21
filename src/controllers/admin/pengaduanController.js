@@ -1,33 +1,12 @@
 const { PrismaClient } = require('@prisma/client');
 const { createClient } = require('@supabase/supabase-js');
-    
-const prisma = new PrismaClient();
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
-const subscribeToKendalaInsert = () => {
-    const channel = supabase
-      .channel('schema-db-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT', // Bisa diganti dengan UPDATE atau DELETE jika perlu
-          schema: 'public',
-          table: 'kendala',
-        },
-        async (payload) => {
-          console.log('Perubahan pada tabel kendala:', payload);
-          
-          // Opsional: Bisa kirim notifikasi atau trigger proses lain di backend
-        }
-      )
-      .subscribe();
-    
-    console.log('Listening for changes on "kendala" table...');
-  };
-  
-  // Panggil fungsi subscribe saat server berjalan
-  subscribeToKendalaInsert();
-  
+const dotenv = require("dotenv");
+dotenv.config();
 
+const prisma = new PrismaClient();
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+
+// Get All Kendala
 const kendala = async (req, res) => {
     try {
         const allUsers = await prisma.kendala.findMany({});
@@ -48,4 +27,30 @@ const update = async (req, res) => {
     }
 };
 
-module.exports = {kendala, update}
+// Update Kendala (PUT) - Hanya Admin
+const updateKendala = async (req, res) => {
+    const { id } = req.params; // Ambil ID dari parameter URL
+    const { status_kendala } = req.body;
+
+    try {
+        if (!id) {
+            return res.status(400).json({ success: false, message: "ID is required" });
+        }
+
+        console.log("ID yang diterima:", id); // Debugging
+
+        const updatedKendala = await prisma.kendala.update({
+            where: { id: id }, // Jika UUID, gunakan langsung
+            data: { status_kendala },
+        });
+
+        res.status(200).json({ success: true, data: updatedKendala });
+    } catch (error) {
+        console.error("Update error:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+
+
+module.exports = {kendala, updateKendala}

@@ -36,7 +36,7 @@ router.delete(
 // kendala
 router.get("/user/:user_id/kendala", authenticatePenghuni, getKendala);
 router.post("/user/:user_id/kendala",authenticatePenghuni, createKendala);
-router.put("/user/:user_id/kendala/:kendala_id",authenticatePenghuni, updateKendala);
-router.delete("/user/:user_id/kendala/:kendala_id",authenticatePenghuni, deleteKendala);
+router.put("/user/:user_id/kendala/:id",authenticatePenghuni, updateKendala);
+router.delete("/user/:user_id/kendala/:id",authenticatePenghuni, deleteKendala);
 
 module.exports = router;

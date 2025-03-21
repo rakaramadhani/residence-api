@@ -11,9 +11,6 @@ router.post("/admin/login", adminLogin);
 router.post("/admin/logout", logout);
 router.get("/admin/details",authenticateAdmin, userDetails);
 
-// Admin access
-router.get("/admin/users", authenticateAdmin, users);
-router.post("/admin/create", authenticateAdmin, addUser);
-router.get("/admin/kendala", authenticateAdmin, kendala);
+
 
 module.exports = router;
