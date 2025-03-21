@@ -11,12 +11,13 @@ const prisma = new PrismaClient();
 //     }
 // };
 
+
 const getFamilyData = async (req, res) => {
     try {
         const { user_id } = req.params;
-        const data = await prisma.anggota.findMany({ where: { userId: parseInt(user_id, 10) } });
+        const data = await prisma.anggota.findMany({ where: { userId: user_id } });
         if (!data.length) {
-            return res.status(404).json({ message: "No family data found" });
+            return res.status(404).json({ message: "No data found" });
         }
         res.status(200).json({ message: "Success", data });
     } catch (error) {
@@ -28,7 +29,7 @@ const createFamilyData = async (req, res) => {
     try {
         const { user_id } = req.params;
         const newFamilyData = await prisma.anggota.create({
-            data: { ...req.body, userId: Number(user_id) }
+            data: { ...req.body, userId: user_id }
         });
         res.status(201).json({ message: "Success", data: newFamilyData });
     } catch (error) {
@@ -40,7 +41,7 @@ const updateFamilyData = async (req, res) => {
     try {
         const { user_id, family_id } = req.params;
         const updatedFamilyData = await prisma.anggota.update({
-            where: { id: parseInt(family_id, 10), userId: parseInt(user_id, 10) },
+            where: { id: family_id, userId: user_id },
             data: req.body
         });
         res.status(200).json({ message: "Success", data: updatedFamilyData });
@@ -53,7 +54,7 @@ const deleteFamilyData = async (req, res) => {
     try {
         const { user_id, family_id } = req.params;
         const deleted = await prisma.anggota.delete({
-            where: { id: parseInt(family_id, 10), userId: parseInt(user_id, 10) }
+            where: { id: family_id, userId: user_id }
         });
         res.status(200).json({ message: "Success" });
     } catch (error) {
