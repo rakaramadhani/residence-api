@@ -2,13 +2,36 @@ const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-
+const subscribeToKendalaChanges = () => {
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE', // Bisa diganti dengan UPDATE atau DELETE jika perlu
+          schema: 'public',
+          table: 'kendala',
+        },
+        async (payload) => {
+          console.log('Perubahan pada tabel kendala:', payload);
+          
+          // Opsional: Bisa kirim notifikasi atau trigger proses lain di backend
+        }
+      )
+      .subscribe();
+    
+    console.log('Listening for changes on "kendala" table...');
+  };
+  
+  // Panggil fungsi subscribe saat server berjalan
+  subscribeToKendalaChanges();
+  
 
 const getKendala = async (req, res) => {
     try {
         const { user_id } = req.params;
 
-        // Fetch data pertama kali
+        
         const data = await prisma.kendala.findMany({
             where: { userId: user_id }
         });
@@ -19,32 +42,7 @@ const getKendala = async (req, res) => {
 
         res.status(200).json({ message: "Success", data });
 
-        // Subscribe ke semua perubahan status_kendala
-        // supabase
-        //     .channel('schema-db-changes')
-        //     .on(
-        //         'postgres_changes',
-        //         {
-        //             schema: 'public',
-        //             table: 'kendala',
-        //             event: 'UPDATE',
-        //             filter: `userId=eq.${user_id}`
-        //         },
-        //         async (payload) => {
-        //             // Pastikan hanya perubahan status_kendala yang dipantau
-        //             if (payload.old.status_kendala !== payload.new.status_kendala) {
-        //                 console.log('Status kendala berubah:', payload);
-
-        //                 // Fetch ulang data terbaru
-        //                 const updatedData = await prisma.kendala.findMany({
-        //                     where: { userId: user_id }
-        //                 });
-
-        //                 res.status(200).json({ message: "Updated Data", data: updatedData });
-        //             }
-        //         }
-        //     )
-        //     .subscribe();
+  
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
