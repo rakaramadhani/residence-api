@@ -10,7 +10,7 @@ generator client {
 
 // User Data
 model User {
-    id    Int     @id @default(uuid())
+    id    String     @id @default(uuid()) @db.Uuid
     createdAt  DateTime   @default(now())
     updatedAt  DateTime   @updatedAt
     email String  @unique
@@ -39,9 +39,9 @@ enum TipeRumah {
 
 // Data Iuran
 model Iuran {
-    id Int @id @default(uuid())
+    id String @id @default(uuid()) @db.Uuid
     user   User @relation(fields: [userId], references: [id])
-    userId Int
+    userId String @db.Uuid 
     tanggal_iuran DateTime
     tanggal_jatuh_tempo DateTime
     createdAt  DateTime   @default(now())
@@ -57,9 +57,9 @@ enum StatusBayar {
 
 // BroadCast Data
 model Broadcast {
-    id Int @id @default(uuid())
+    id String @id @default(uuid()) @db.Uuid
     user   User @relation(fields: [userId], references: [id])
-    userId Int
+    userId String @db.Uuid
     broadcast String
     tanggal_acara DateTime
     status_broadcast StatusBroadcast @default(uploaded)
@@ -75,9 +75,9 @@ enum StatusBroadcast {
 
 // Data Anggota Keluarga
 model Anggota {
-    id Int @id @default(autoincrement())
+    id String @id @default(uuid()) @db.Uuid
     user   User @relation(fields: [userId], references: [id])
-    userId Int
+    userId String @db.Uuid 
     nama String
     nik Int
     gender Gender
@@ -94,9 +94,9 @@ enum Gender {
 // Kendala
 
 model Kendala {
-    id Int @id @default(uuid())
+    id String @id @default(uuid()) @db.Uuid
     user   User @relation(fields: [userId], references: [id])
-    userId Int
+    userId String @db.Uuid
     kendala String
     kategori Kategori
     status_kendala StatusKendala @default(PengajuanBaru)
@@ -127,9 +127,9 @@ model Peraturan {
 
 // Panic
 model Panic {
-    id Int @id @default(uuid())
+    id String @id @default(uuid())
     user   User @relation(fields: [userId], references: [id])
-    userId Int
+    userId String @db.Uuid
     created_at DateTime @default(now())
     updatedAt  DateTime   @updatedAt
 }

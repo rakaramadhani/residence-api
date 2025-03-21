@@ -20,7 +20,7 @@ const users = async (req, res) => {
                 role: "penghuni"
             }
         });
-        res.status(200).json({ message: "Success", data: allUsers });
+        res.status(200).json({data: allUsers });
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
