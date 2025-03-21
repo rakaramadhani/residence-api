@@ -37,7 +37,6 @@ const login = async (req, res) => {
                 secret,
                 { expiresIn: "1d" }
             );
-
     return res.json({
       token,
       data: {

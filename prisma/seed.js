@@ -12,7 +12,7 @@ async function main() {
         where: { email: "admin@gmail.com"},
     });
     const userCheck = await prisma.user.findUnique({
-        where: { email: "admin@gmail.com"},
+        where: { email: "user@gmail.com"},
     });
 
     if (!adminCheck && !userCheck) {
