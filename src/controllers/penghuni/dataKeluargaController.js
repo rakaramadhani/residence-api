@@ -11,6 +11,7 @@ const prisma = new PrismaClient();
 //     }
 // };
 
+
 const getFamilyData = async (req, res) => {
     try {
         const { user_id } = req.params;
