@@ -1,5 +1,5 @@
-// const { createClient } = require('@supabase/supabase-js');
-// const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+const { createClient } = require('@supabase/supabase-js');
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -10,7 +10,7 @@ const getKendala = async (req, res) => {
 
         // Fetch data pertama kali
         const data = await prisma.kendala.findMany({
-            where: { userId: parseInt(user_id, 10) }
+            where: { userId: user_id }
         });
 
         if (!data.length) {
@@ -20,31 +20,31 @@ const getKendala = async (req, res) => {
         res.status(200).json({ message: "Success", data });
 
         // Subscribe ke semua perubahan status_kendala
-        supabase
-            .channel('schema-db-changes')
-            .on(
-                'postgres_changes',
-                {
-                    schema: 'public',
-                    table: 'kendala',
-                    event: 'UPDATE',
-                    filter: `userId=eq.${user_id}`
-                },
-                async (payload) => {
-                    // Pastikan hanya perubahan status_kendala yang dipantau
-                    if (payload.old.status_kendala !== payload.new.status_kendala) {
-                        console.log('Status kendala berubah:', payload);
+        // supabase
+        //     .channel('schema-db-changes')
+        //     .on(
+        //         'postgres_changes',
+        //         {
+        //             schema: 'public',
+        //             table: 'kendala',
+        //             event: 'UPDATE',
+        //             filter: `userId=eq.${user_id}`
+        //         },
+        //         async (payload) => {
+        //             // Pastikan hanya perubahan status_kendala yang dipantau
+        //             if (payload.old.status_kendala !== payload.new.status_kendala) {
+        //                 console.log('Status kendala berubah:', payload);
 
-                        // Fetch ulang data terbaru
-                        const updatedData = await prisma.kendala.findMany({
-                            where: { userId: parseInt(user_id, 10) }
-                        });
+        //                 // Fetch ulang data terbaru
+        //                 const updatedData = await prisma.kendala.findMany({
+        //                     where: { userId: user_id }
+        //                 });
 
-                        res.status(200).json({ message: "Updated Data", data: updatedData });
-                    }
-                }
-            )
-            .subscribe();
+        //                 res.status(200).json({ message: "Updated Data", data: updatedData });
+        //             }
+        //         }
+        //     )
+        //     .subscribe();
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
@@ -53,8 +53,8 @@ const getKendala = async (req, res) => {
 const createKendala = async (req, res) => {
     try {
         const { user_id } = req.params;
-        const newKendalaData = await prisma.anggota.create({
-            data: { ...req.body, userId: Number(user_id) } 
+        const newKendalaData = await prisma.kendala.create({
+            data: { ...req.body, userId: user_id } 
         });
         res.status(201).json({ message: "Success", data: newKendalaData });
     } catch (error) {
@@ -72,8 +72,8 @@ const updateKendala = async (req, res) => {
 
         const updatedKendala = await prisma.kendala.update({
             where: { 
-                id: parseInt(kendala_id, 10), 
-                userId: parseInt(user_id, 10) 
+                id: kendala_id, 
+                userId: user_id 
             },
             data: updateData // Hanya update data tanpa `status_kendala`
         });
@@ -88,7 +88,7 @@ const deleteKendala = async (req, res) => {
     try {
         const { user_id, kendala_id } = req.params;
         const deleted = await prisma.kendala.delete({
-            where: { id: parseInt(kendala_id, 10), userId: parseInt(user_id, 10) }
+            where: { id: kendala_id, userId: user_id }
         });
         res.status(200).json({ message: "Success" });
     } catch (error) {
