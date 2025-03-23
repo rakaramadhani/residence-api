@@ -3,7 +3,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const app = express();  
 const joi  = require('joi');
-    
+
 const prisma = new PrismaClient();
 app.use(express.json());
 
@@ -25,33 +25,29 @@ const users = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
-const addUser = async (req, res) => {
-    const { email, password } = req.body;
 
+const createUser = async (req, res) => {
+    const { email, password } = req.body;
     // Validasi input
     const { error } = userSchema.validate({ email, password });
     if (error) {
         return res.status(400).json({ message: error.details[0].message });
     }
-
     try {
         // Cek apakah email sudah ada
         const existingUser = await prisma.user.findUnique({
             where: { email },
         });
-
         if (existingUser) {
             return res.status(400).json({ message: "Email already exists" });
         }
-
         // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
-
         // Simpan user baru
         const user = await prisma.user.create({
             data: {
                 email,
-                password: hashedPassword, // Pastikan pakai nama yang sesuai di model Prisma
+                password: hashedPassword,
             },
         });
 
@@ -64,4 +60,4 @@ const addUser = async (req, res) => {
     }
 };
 
-module.exports = {users,addUser}
+module.exports = {users, createUser}

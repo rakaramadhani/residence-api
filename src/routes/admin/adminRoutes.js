@@ -1,13 +1,13 @@
 const express = require("express");
 const { authenticateAdmin } = require("../../middleware/authAdmin");
-const { users, addUser } = require("../../controllers/admin/usersController");
+const { users, createUser } = require("../../controllers/admin/usersController");
 const { kendala, updateKendala } = require("../../controllers/admin/pengaduanController");
 
 const router = express.Router();
 
 // Users
 router.get("/admin/users", authenticateAdmin, users);
-router.post("/admin/create", authenticateAdmin, addUser);
+router.post("/admin/create-user", authenticateAdmin, createUser);
 
 // Kendala
 router.get("/admin/kendala", authenticateAdmin, kendala);
