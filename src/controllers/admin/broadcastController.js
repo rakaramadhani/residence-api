@@ -6,10 +6,10 @@ dotenv.config();
 const prisma = new PrismaClient();
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
-// Get All Kendala
-const kendala = async (req, res) => {
+// Get All Broadcast
+const broadcast = async (req, res) => {
     try {
-        const allUsers = await prisma.kendala.findMany({});
+        const allUsers = await prisma.broadcast.findMany({});
         res.status(200).json({ message: "Success", data: allUsers });
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
@@ -18,9 +18,9 @@ const kendala = async (req, res) => {
 
 
 // Update Kendala (PUT) - Hanya Admin
-const updateKendala = async (req, res) => {
+const updateBroadcast = async (req, res) => {
     const { id } = req.params; // Ambil ID dari parameter URL
-    const { status_kendala,feedback } = req.body;
+    const { status_broadcast, feedback } = req.body;
 
     try {
         if (!id) {
@@ -31,7 +31,7 @@ const updateKendala = async (req, res) => {
 
         const updatedKendala = await prisma.kendala.update({
             where: { id: id }, // Jika UUID, gunakan langsung
-            data: { status_kendala: status_kendala , feedback: feedback },
+            data: { status_broadcast: status_broadcast, feedback: feedback },
         });
 
         res.status(200).json({ success: true, data: updatedKendala });
@@ -43,4 +43,4 @@ const updateKendala = async (req, res) => {
 
 
 
-module.exports = {kendala, updateKendala}
+module.exports = {broadcast, updateBroadcast}

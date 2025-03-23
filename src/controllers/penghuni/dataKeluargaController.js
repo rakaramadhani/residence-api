@@ -1,17 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-// const getFamilyData = async (req, res) => {
-//     try {
-//         const { user_id } = req.params;
-//         const data = await prisma.dataKeluarga.findMany({ where: { userId: Number(user_id) } });
-//         res.status(200).json({ message: "Success", data });
-//     } catch (error) {
-//         res.status(500).json({ message: "Internal Server Error", error: error.message });
-//     }
-// };
-
-
 const getFamilyData = async (req, res) => {
     try {
         const { user_id } = req.params;
@@ -39,9 +28,9 @@ const createFamilyData = async (req, res) => {
 
 const updateFamilyData = async (req, res) => {
     try {
-        const { user_id, family_id } = req.params;
+        const { user_id, id } = req.params;
         const updatedFamilyData = await prisma.anggota.update({
-            where: { id: family_id, userId: user_id },
+            where: { id: id, userId: user_id },
             data: req.body
         });
         res.status(200).json({ message: "Success", data: updatedFamilyData });
@@ -52,9 +41,9 @@ const updateFamilyData = async (req, res) => {
 
 const deleteFamilyData = async (req, res) => {
     try {
-        const { user_id, family_id } = req.params;
+        const { user_id, id } = req.params;
         const deleted = await prisma.anggota.delete({
-            where: { id: family_id, userId: user_id }
+            where: { id: id, userId: user_id }
         });
         res.status(200).json({ message: "Success" });
     } catch (error) {
