@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon .",
-    "postinstall": "prisma generate"
+    "seed" : "node ./prisma/seed.js",
+    "dev": "node ./prisma/seed.js && node ./src/server.js"
   },
   "author": "",
   "license": "ISC",

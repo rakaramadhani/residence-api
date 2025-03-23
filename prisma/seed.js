@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
 
-async function main() {
+async function seeder() {
     // Ngecek Admin
     const adminCheck = await prisma.user.findUnique({
         where: { email: "admin@gmail.com"},
@@ -19,7 +19,6 @@ async function main() {
         // Hash password
         const adminHashedPassword = await bcrypt.hash("admin123", 10);
         const penghunihashedPassword = await bcrypt.hash("user123", 10);
-
         // Buat akun admin
         await prisma.user.create({
             data: {
@@ -50,11 +49,6 @@ async function main() {
     }
 }
 
-main()
-    .catch((e) => {
-        console.error(e);
-        process.exit(1);
-    })
-    .finally(async () => {
-        await prisma.$disconnect();
-    });
+module.exports=seeder;
+
+

@@ -11,6 +11,7 @@ app.use(express.json());
 const userSchema = joi.object({
     email: joi.string().email().required(),
     password: joi.string().min(8).required(),
+    phone: joi.string().pattern(/^[0-9]+$/).min(10).max(15),
 });
 
 const users = async (req, res) => {
@@ -27,9 +28,9 @@ const users = async (req, res) => {
 };
 
 const createUser = async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, phone } = req.body;
     // Validasi input
-    const { error } = userSchema.validate({ email, password });
+    const { error } = userSchema.validate({ email, password, phone });
     if (error) {
         return res.status(400).json({ message: error.details[0].message });
     }
@@ -47,10 +48,15 @@ const createUser = async (req, res) => {
         const user = await prisma.user.create({
             data: {
                 email,
+                phone,
                 password: hashedPassword,
             },
         });
-
+        const response = await supabase.channel("all_changes").send({
+            type: "broadcast",
+            event: "create_user",
+            payload: create_user,
+        });
         res.status(201).json({ message: "User created successfully", data: user });
     } catch (error) {
         if (error.code === "P2002") {
