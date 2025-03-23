@@ -32,6 +32,7 @@ enum Role {
     penghuni
     admin
 }
+
 enum TipeRumah {
     ChairaTownHouse
     GrandCeleste
