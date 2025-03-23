@@ -4,9 +4,14 @@ const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 const nodemailer = require("nodemailer");
 const { PrismaClient } = require("@prisma/client");
+const { createClient } = require("@supabase/supabase-js");
 const app = express();
 const prisma = new PrismaClient();
 dotenv.config();
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
 
 app.use(express.json());
 
@@ -24,19 +29,19 @@ const login = async (req, res) => {
     }
 
     if (user.role !== "penghuni") {
-      return res.status(403).json({ message: "Access denied: Only penghuni can login" });
+      return res
+        .status(403)
+        .json({ message: "Access denied: Only penghuni can login" });
     }
-    
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const token = jwt.sign(
-                { id: user.id, role: "penghuni" },
-                secret,
-                { expiresIn: "1d" }
-            );
+    const token = jwt.sign({ id: user.id, role: "penghuni" }, secret, {
+      expiresIn: "1d",
+    });
     return res.json({
       token,
       data: {
@@ -54,23 +59,49 @@ const login = async (req, res) => {
 // detail user
 const userDetails = async (req, res) => {
   try {
-    const user = await prisma.user.findUnique({ where: { id: req.user.id },select: {
-      id: true,
-      username: true,
-      email: true,
-      blok_rumah:true,
-      tipe_rumah:true
-    } });
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        phone:true,
+        blok_rumah: true,
+        tipe_rumah: true,
+      },
+    });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
     res.status(200).json({ message: "User Details", data: user });
   } catch (error) {
-    console.error(error); 
+    console.error(error);
     return res.status(500).json({ message: "Server error" }); // Return a server error response
   }
-}
+};
+
+// lengkapi data user
+const updateDataUser = async (req, res) => {
+  const { user_id } = req.params;
+  const { phone, blok_rumah, tipe_rumah } = req.body;
+  try {
+    const userDetailData = await prisma.user.update({
+      where: { id: user_id },
+      data: { phone, blok_rumah, tipe_rumah },
+    });
+    const response = await supabase.channel("all_changes").send({
+      type: "broadcast",
+      event: "new_user_detail",
+      payload: userDetailData,
+    });
+
+    console.log("Supabase Event Sent:", response);
+    res.status(200).json({ message: "success", data: userDetailData });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
 
 // logout
 const logout = async (req, res) => {
@@ -124,8 +155,9 @@ const resetPassword = async (req, res) => {
     // Kirim email
     await transporter.sendMail(mailOptions);
 
-    return res.status(200).json({ message: "Reset password link sent to your email" });
-
+    return res
+      .status(200)
+      .json({ message: "Reset password link sent to your email" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server error" });
@@ -146,12 +178,20 @@ const changePassword = async (req, res) => {
       data: { password: hashedPassword },
     });
 
-    return res.status(200).json({ message: "Password has been reset successfully" });
-
+    return res
+      .status(200)
+      .json({ message: "Password has been reset successfully" });
   } catch (error) {
     console.error(error);
     return res.status(400).json({ message: "Invalid or expired token" });
   }
 };
 
-module.exports = { login, userDetails ,logout ,resetPassword,changePassword };
+module.exports = {
+  login,
+  userDetails,
+  logout,
+  resetPassword,
+  changePassword,
+  updateDataUser,
+};

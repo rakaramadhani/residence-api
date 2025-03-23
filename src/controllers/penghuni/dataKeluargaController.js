@@ -6,7 +6,7 @@ const getFamilyData = async (req, res) => {
         const { user_id } = req.params;
         const data = await prisma.anggota.findMany({ where: { userId: user_id } });
         if (!data.length) {
-            return res.status(404).json({ message: "No data found" });
+            return res.status(200).json({ message: "No data found" });
         }
         res.status(200).json({ message: "Success", data });
     } catch (error) {

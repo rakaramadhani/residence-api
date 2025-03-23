@@ -86,9 +86,9 @@ const updateBroadcast = async (req, res) => {
 
 const deleteBroadcast = async (req, res) => {
     try {
-        const { user_id, broadcast_id } = req.params;
+        const { user_id, id } = req.params;
         const deleted = await prisma.broadcast.delete({
-            where: { id: broadcast_id, userId: user_id }
+            where: { userId: user_id, id: id }
         });
         const response = await supabase.channel("all_changes").send({
             type: "broadcast",

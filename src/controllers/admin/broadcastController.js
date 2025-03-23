@@ -29,12 +29,12 @@ const updateBroadcast = async (req, res) => {
 
         console.log("ID yang diterima:", id); // Debugging
 
-        const updatedKendala = await prisma.kendala.update({
+        const updatedBroadcast = await prisma.broadcast.update({
             where: { id: id }, // Jika UUID, gunakan langsung
             data: { status_broadcast: status_broadcast, feedback: feedback },
         });
 
-        res.status(200).json({ success: true, data: updatedKendala });
+        res.status(200).json({ success: true, data: updatedBroadcast });
     } catch (error) {
         console.error("Update error:", error.message);
         res.status(500).json({ success: false, message: error.message });
