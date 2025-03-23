@@ -16,6 +16,7 @@ model User {
     email String  @unique
     username  String?
     password String
+    phone String?
     role  Role @default(penghuni)
     blok_rumah String?
     tipe_rumah TipeRumah?
@@ -63,7 +64,7 @@ model Broadcast {
     broadcast String
     tanggal_acara DateTime
     status_broadcast StatusBroadcast @default(uploaded)
-    feedback String
+    feedback String?
     createdAt  DateTime   @default(now())
 }
 
