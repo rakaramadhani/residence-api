@@ -3,6 +3,7 @@ const { authenticateAdmin } = require("../../middleware/authAdmin");
 const { users, createUser, detail, verifikasiUser } = require("../../controllers/admin/usersController");
 const { kendala, updateKendala } = require("../../controllers/admin/pengaduanController");
 const { broadcast, updateBroadcast} = require("../../controllers/admin/broadcastController");
+const { getEmergency } = require("../../controllers/admin/emergencyController");
 
 const router = express.Router();
 
@@ -19,4 +20,7 @@ router.put("/admin/kendala/:id", authenticateAdmin, updateKendala);
 // broadcast
 router.get("/admin/broadcast", authenticateAdmin, broadcast);
 router.put("/admin/broadcast/:id", authenticateAdmin, updateBroadcast);
+
+// emergency
+router.get("/admin/emergency", authenticateAdmin, getEmergency);
 module.exports = router;

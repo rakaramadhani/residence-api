@@ -1,6 +1,7 @@
 const express = require("express");
 const { authenticatePenghuni } = require("../../middleware/authPenghuni");
 const router = express.Router();
+const {emergency} = require("../../controllers/penghuni/emergencyController");
 
 const {
   getFamilyData,
@@ -42,5 +43,8 @@ router.get("/user/:user_id/broadcast", authenticatePenghuni, getBroadcast);
 router.post("/user/:user_id/broadcast",authenticatePenghuni, createBroadcast);
 router.put("/user/:user_id/broadcast/:id",authenticatePenghuni, updateBroadcast);
 router.delete("/user/:user_id/broadcast/:id",authenticatePenghuni, deleteBroadcast);
+
+// emergency
+router.post("/user/emergency/:user_id",authenticatePenghuni, emergency);
 
 module.exports = router;

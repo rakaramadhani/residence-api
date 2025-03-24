@@ -47,7 +47,7 @@ const createKendala = async (req, res) => {
         console.log("Supabase Event Sent:", response);
 
 
-        res.status(201).json({ success: true, data: newKendala });
+        res.status(200).json({ success: true, data: newKendala });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
