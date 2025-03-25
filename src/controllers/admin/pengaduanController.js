@@ -6,10 +6,10 @@ dotenv.config();
 const prisma = new PrismaClient();
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
-// Get All Kendala
-const kendala = async (req, res) => {
+// Get All Pengaduan
+const pengaduan = async (req, res) => {
     try {
-        const allUsers = await prisma.kendala.findMany({});
+        const allUsers = await prisma.pengaduan.findMany({});
         res.status(200).json({ message: "Success", data: allUsers });
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
@@ -17,10 +17,10 @@ const kendala = async (req, res) => {
 };
 
 
-// Update Kendala (PUT) - Hanya Admin
-const updateKendala = async (req, res) => {
+// Update pengaduan (PUT) - Hanya Admin
+const updatePengaduan = async (req, res) => {
     const { id } = req.params;
-    const { status_kendala,feedback } = req.body;
+    const { status_pengaduan,feedback } = req.body;
 
     try {
         if (!id) {
@@ -29,22 +29,22 @@ const updateKendala = async (req, res) => {
 
         console.log("ID yang diterima:", id);
 
-        const updatedKendala = await prisma.kendala.update({
+        const updatedPengaduan = await prisma.pengaduan.update({
             where: { id: id },
             data: { 
-                status_kendala: status_kendala , 
+                status_pengaduan: status_pengaduan , 
                 feedback: feedback 
             },
         });
 
         const response = await supabase.channel("all_changes").send({
                 type: "broadcast",
-                event: "updated_kendala",
-                payload: updatedKendala,
+                event: "updated_pengaduan",
+                payload: updatedPengaduan,
         });
 
         
-        res.status(200).json({ success: true, data: updatedKendala });
+        res.status(200).json({ success: true, data: updatedPengaduan });
     } catch (error) {
         console.error("Update error:", error.message);
         res.status(500).json({ success: false, message: error.message });
@@ -53,4 +53,4 @@ const updateKendala = async (req, res) => {
 
 
 
-module.exports = {kendala, updateKendala}
+module.exports = {pengaduan, updatePengaduan}

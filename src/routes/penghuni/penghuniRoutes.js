@@ -2,6 +2,7 @@ const express = require("express");
 const { authenticatePenghuni } = require("../../middleware/authPenghuni");
 const router = express.Router();
 const {emergency} = require("../../controllers/penghuni/emergencyController");
+const {tokenizer} = require("../../controllers/midtrans/midtransController");
 
 const {
   getFamilyData,
@@ -11,11 +12,11 @@ const {
 } = require("../../controllers/penghuni/dataKeluargaController");
 
 const {
-  getKendala,
-  createKendala,
-  updateKendala,
-  deleteKendala,
-} = require("../../controllers/penghuni/kendalaController");
+  getPengaduan,
+  createPengaduan,
+  updatePengaduan,
+  deletePengaduan,
+} = require("../../controllers/penghuni/pengaduanController");
 
 const{
   getAllBroadcast,
@@ -31,11 +32,11 @@ router.post("/user/:user_id/data-keluarga",authenticatePenghuni,createFamilyData
 router.put("/user/:user_id/data-keluarga/:id",authenticatePenghuni,updateFamilyData);
 router.delete("/user/:user_id/data-keluarga/:id",authenticatePenghuni,deleteFamilyData);
 
-// kendala
-router.get("/user/:user_id/kendala", authenticatePenghuni, getKendala);
-router.post("/user/:user_id/kendala", authenticatePenghuni, createKendala);
-router.put("/user/:user_id/kendala/:id", authenticatePenghuni, updateKendala);
-router.delete("/user/:user_id/kendala/:id",authenticatePenghuni,deleteKendala);
+// Pengaduan
+router.get("/user/:user_id/pengaduan", authenticatePenghuni, getPengaduan);
+router.post("/user/:user_id/pengaduan", authenticatePenghuni, createPengaduan);
+router.put("/user/:user_id/pengaduan/:id", authenticatePenghuni, updatePengaduan);
+router.delete("/user/:user_id/pengaduan/:id",authenticatePenghuni, deletePengaduan);
 
 // Broadcast
 router.get("/user/broadcast", authenticatePenghuni, getAllBroadcast);
@@ -46,5 +47,8 @@ router.delete("/user/:user_id/broadcast/:id",authenticatePenghuni, deleteBroadca
 
 // emergency
 router.post("/user/emergency/:user_id",authenticatePenghuni, emergency);
+
+// midtrans 
+router.post("/user/payment/tokenizer",authenticatePenghuni, tokenizer);
 
 module.exports = router;

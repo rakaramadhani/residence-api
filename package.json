@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon .",
-    "seed" : "node ./prisma/seed.js",
+    "seed": "node ./prisma/seed.js",
     "dev": "node ./prisma/seed.js && node ./src/server.js"
   },
   "author": "",
@@ -20,6 +20,7 @@
     "express": "^4.21.2",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
+    "midtrans-client": "^1.4.2",
     "nodemailer": "^6.10.0",
     "uuid": "^11.1.0"
   },

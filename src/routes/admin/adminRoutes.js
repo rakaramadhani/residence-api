@@ -1,10 +1,11 @@
 const express = require("express");
 const { authenticateAdmin } = require("../../middleware/authAdmin");
 const { users, createUser, detail, verifikasiUser } = require("../../controllers/admin/usersController");
-const { kendala, updateKendala } = require("../../controllers/admin/pengaduanController");
+const { pengaduan, updatePengaduan } = require("../../controllers/admin/pengaduanController");
 const { broadcast, updateBroadcast} = require("../../controllers/admin/broadcastController");
 const { getEmergency } = require("../../controllers/admin/emergencyController");
 const { createPeraturan, deletePeraturan, updatePeraturan } = require("../../controllers/admin/peraturanController");
+const { getTagihan, createTagihan} = require("../../controllers/admin/tagihanController");
 
 const router = express.Router();
 
@@ -14,9 +15,9 @@ router.post("/admin/create-user", authenticateAdmin, createUser);
 router.get("/admin/user/:user_id",authenticateAdmin, detail);
 router.put("/admin/user/:user_id",authenticateAdmin, verifikasiUser);
 
-// Kendala
-router.get("/admin/kendala", authenticateAdmin, kendala);
-router.put("/admin/kendala/:id", authenticateAdmin, updateKendala);
+// Pengaduan
+router.get("/admin/pengaduan", authenticateAdmin, pengaduan);
+router.put("/admin/pengaduan/:id", authenticateAdmin, updatePengaduan);
 
 // Peraturan
 router.get("/admin/peraturan", authenticateAdmin, createPeraturan);
@@ -29,4 +30,9 @@ router.put("/admin/broadcast/:id", authenticateAdmin, updateBroadcast);
 
 // emergency
 router.get("/admin/emergency", authenticateAdmin, getEmergency);
+
+// tagihan
+router.get("/admin/tagihan",authenticateAdmin, getTagihan);
+router.post("/admin/tagihan",authenticateAdmin, createTagihan);
+
 module.exports = router;

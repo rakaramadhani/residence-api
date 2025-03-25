@@ -50,7 +50,7 @@ model Iuran {
     tahun        Int
     nominal      Int
     createdAt    DateTime    @default(now())
-    status_bayar StatusBayar
+    status_bayar StatusBayar @default(verifikasi)
 }
 
 model Transaksi {
