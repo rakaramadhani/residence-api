@@ -29,7 +29,7 @@ const updatePengaduan = async (req, res) => {
 
         console.log("ID yang diterima:", id);
 
-        const updatedKendala = await prisma.pengaduan.update({
+        const updatedPengaduan = await prisma.pengaduan.update({
             where: { id: id },
             data: { 
                 status_pengaduan: status_pengaduan , 
