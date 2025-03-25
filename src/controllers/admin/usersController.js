@@ -4,6 +4,8 @@ const bcrypt = require("bcrypt");
 const app = express();
 const joi = require("joi");
 const {createClient} = require('@supabase/supabase-js')
+const dotenv = require("dotenv");
+dotenv.config();
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
 const prisma = new PrismaClient();
@@ -66,8 +68,8 @@ const createUser = async (req, res) => {
     });
     const response = await supabase.channel("all_changes").send({
         type: "broadcast",
-        event: "create_user",
-        payload: createUser,
+        event: "user",
+        payload: user,
     });
     res.status(201).json({ message: "User created successfully", data: user });
     } catch (error) {

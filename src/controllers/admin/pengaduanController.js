@@ -19,7 +19,7 @@ const kendala = async (req, res) => {
 
 // Update Kendala (PUT) - Hanya Admin
 const updateKendala = async (req, res) => {
-    const { id } = req.params; // Ambil ID dari parameter URL
+    const { id } = req.params;
     const { status_kendala,feedback } = req.body;
 
     try {
@@ -27,13 +27,23 @@ const updateKendala = async (req, res) => {
             return res.status(400).json({ success: false, message: "ID is required" });
         }
 
-        console.log("ID yang diterima:", id); // Debugging
+        console.log("ID yang diterima:", id);
 
         const updatedKendala = await prisma.kendala.update({
-            where: { id: id }, // Jika UUID, gunakan langsung
-            data: { status_kendala: status_kendala , feedback: feedback },
+            where: { id: id },
+            data: { 
+                status_kendala: status_kendala , 
+                feedback: feedback 
+            },
         });
 
+        const response = await supabase.channel("all_changes").send({
+                type: "broadcast",
+                event: "updated_kendala",
+                payload: updatedKendala,
+        });
+
+        
         res.status(200).json({ success: true, data: updatedKendala });
     } catch (error) {
         console.error("Update error:", error.message);

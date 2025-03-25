@@ -1,9 +1,5 @@
-
-
 const { PrismaClient } = require("@prisma/client");
-
 const bcrypt = require('bcrypt');
-
 const prisma = new PrismaClient();
 
 async function seeder() {
@@ -15,6 +11,7 @@ async function seeder() {
         where: { email: "user@gmail.com"},
     });
 
+    
     if (!adminCheck && !userCheck) {
         // Hash password
         const adminHashedPassword = await bcrypt.hash("admin123", 10);
