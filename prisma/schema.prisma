@@ -1,6 +1,6 @@
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+    provider  = "postgresql"
+    url       = env("DATABASE_URL")
     directUrl = env("DIRECT_URL")
 }
 
@@ -10,25 +10,26 @@ generator client {
 
 // User Data
 model User {
-    id    String     @id @default(uuid()) @db.Uuid
-    createdAt  DateTime   @default(now())
-    updatedAt  DateTime   @updatedAt
-    email String  @unique
-    username  String?
-    password String
-    phone String?
-    role  Role @default(penghuni)
+    id         String      @id @default(uuid()) @db.Uuid
+    createdAt  DateTime    @default(now())
+    updatedAt  DateTime    @updatedAt
+    email      String      @unique
+    username   String?
+    password   String
+    phone      String?
+    role       Role        @default(penghuni)
     blok_rumah String?
     tipe_rumah TipeRumah?
     isVerified Boolean?
-    feedback String?
-    iuran Iuran[]
-    transaksi Transaksi[]
-    broadcast Broadcast[]
-    anggota Anggota[]
-    kendala Kendala[]
-    panic Panic[]
+    feedback   String?
+    iuran      Iuran[]
+    transaksi  Transaksi[]
+    broadcast  Broadcast[]
+    anggota    Anggota[]
+    Pengaduan  Pengaduan[]
+    panic      Panic[]
 }
+
 enum Role {
     penghuni
     admin
@@ -42,27 +43,26 @@ enum TipeRumah {
 
 // Data Iuran
 model Iuran {
-    id String @id @default(uuid()) @db.Uuid
-    user   User @relation(fields: [userId], references: [id])
-    userId String @db.Uuid 
-    bulan Int
-    tahun Int
-    nominal Int
-    createdAt  DateTime   @default(now())
+    id           String      @id @default(uuid()) @db.Uuid
+    user         User        @relation(fields: [userId], references: [id])
+    userId       String      @db.Uuid
+    bulan        Int
+    tahun        Int
+    nominal      Int
+    createdAt    DateTime    @default(now())
     status_bayar StatusBayar
-    
 }
 
 model Transaksi {
-    id String @id @default(uuid()) @db.Uuid
-    user   User @relation(fields: [userId], references: [id])
-    userId String @db.Uuid
-    midtransOrderId String @unique
-    totalNominal Int
-    status String
-    paidMonth Int
-    paidYear Int
-    createdAt  DateTime   @default(now())
+    id              String   @id @default(uuid()) @db.Uuid
+    user            User     @relation(fields: [userId], references: [id])
+    userId          String   @db.Uuid
+    midtransOrderId String   @unique
+    totalNominal    Int
+    status          String
+    paidMonth       Int
+    paidYear        Int
+    createdAt       DateTime @default(now())
 }
 
 enum StatusBayar {
@@ -72,14 +72,14 @@ enum StatusBayar {
 
 // BroadCast Data
 model Broadcast {
-    id String @id @default(uuid()) @db.Uuid
-    user   User @relation(fields: [userId], references: [id])
-    userId String @db.Uuid
-    broadcast String
-    tanggal_acara DateTime
+    id               String          @id @default(uuid()) @db.Uuid
+    user             User            @relation(fields: [userId], references: [id])
+    userId           String          @db.Uuid
+    broadcast        String
+    tanggal_acara    DateTime
     status_broadcast StatusBroadcast @default(uploaded)
-    feedback String?
-    createdAt  DateTime   @default(now())
+    feedback         String?
+    createdAt        DateTime        @default(now())
 }
 
 enum StatusBroadcast {
@@ -90,15 +90,15 @@ enum StatusBroadcast {
 
 // Data Anggota Keluarga
 model Anggota {
-    id String @id @default(uuid()) @db.Uuid
-    user   User @relation(fields: [userId], references: [id])
-    userId String @db.Uuid 
-    nama String
-    nik Int
-    gender Gender
-    tempat_lahir String
+    id            String   @id @default(uuid()) @db.Uuid
+    user          User     @relation(fields: [userId], references: [id])
+    userId        String   @db.Uuid
+    nama          String
+    nik           Int
+    gender        Gender
+    tempat_lahir  String
     tanggal_lahir DateTime
-    ktp String
+    ktp           String
 }
 
 enum Gender {
@@ -106,18 +106,17 @@ enum Gender {
     Wanita
 }
 
-// Kendala
-
-model Kendala {
-    id String @id @default(uuid()) @db.Uuid
-    user   User @relation(fields: [userId], references: [id])
-    userId String @db.Uuid
-    kendala String
-    kategori Kategori
-    status_kendala StatusKendala @default(PengajuanBaru)
-    feedback String?
-    created_at DateTime @default(now())
-    updatedAt  DateTime   @updatedAt
+// Pengaduan
+model Pengaduan {
+    id               String          @id @default(uuid()) @db.Uuid
+    user             User            @relation(fields: [userId], references: [id])
+    userId           String          @db.Uuid
+    pengaduan        String
+    kategori         Kategori
+    status_pengaduan StatusPengaduan @default(PengajuanBaru)
+    feedback         String?
+    created_at       DateTime        @default(now())
+    updatedAt        DateTime        @updatedAt
 }
 
 enum Kategori {
@@ -128,7 +127,7 @@ enum Kategori {
     Lainnya
 }
 
-enum StatusKendala {
+enum StatusPengaduan {
     PengajuanBaru
     Ditangani
     Selesai
@@ -136,15 +135,18 @@ enum StatusKendala {
 
 // Peraturan
 model Peraturan {
-    id Int @id @default(autoincrement())
-    peraturan String
+    id        Int      @id @default(autoincrement())
+    title     String
+    content   String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }
 
 // Panic
 model Panic {
-    id String @id @default(uuid())
-    user   User @relation(fields: [userId], references: [id])
-    userId String @db.Uuid
+    id         String   @id @default(uuid())
+    user       User     @relation(fields: [userId], references: [id])
+    userId     String   @db.Uuid
     created_at DateTime @default(now())
-    updatedAt  DateTime   @updatedAt
+    updatedAt  DateTime @updatedAt
 }

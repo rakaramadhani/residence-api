@@ -4,6 +4,7 @@ const { users, createUser, detail, verifikasiUser } = require("../../controllers
 const { kendala, updateKendala } = require("../../controllers/admin/pengaduanController");
 const { broadcast, updateBroadcast} = require("../../controllers/admin/broadcastController");
 const { getEmergency } = require("../../controllers/admin/emergencyController");
+const { createPeraturan, deletePeraturan, updatePeraturan } = require("../../controllers/admin/peraturanController");
 
 const router = express.Router();
 
@@ -16,6 +17,11 @@ router.put("/admin/user/:user_id",authenticateAdmin, verifikasiUser);
 // Kendala
 router.get("/admin/kendala", authenticateAdmin, kendala);
 router.put("/admin/kendala/:id", authenticateAdmin, updateKendala);
+
+// Peraturan
+router.get("/admin/peraturan", authenticateAdmin, createPeraturan);
+router.put("/admin/peraturan/:id", authenticateAdmin, updatePeraturan);
+router.delete("/admin/peraturan/:id", authenticateAdmin, deletePeraturan);
 
 // broadcast
 router.get("/admin/broadcast", authenticateAdmin, broadcast);
