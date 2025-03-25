@@ -8,11 +8,11 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
 const prisma = new PrismaClient();
 
 
-// Get Kendala tiap User
-const getKendala = async (req, res) => {
+// Get Pengaduan tiap User
+const getPengaduan = async (req, res) => {
     try {
         const { user_id } = req.params;
-        const data = await prisma.kendala.findMany({
+        const data = await prisma.pengaduan.findMany({
             where: { userId: user_id }
         });
         if (!data.length) {
@@ -24,64 +24,64 @@ const getKendala = async (req, res) => {
     }
 };
 
-// Buat Kendala
-const createKendala = async (req, res) => {
+// Buat Pengaduan
+const createPengaduan = async (req, res) => {
     const { user_id } = req.params;
-    const { kendala, kategori } = req.body;
+    const { pengaduan, kategori } = req.body;
     try {
         // Simpan data ke database
-        const newKendala = await prisma.kendala.create({
+        const newPengaduan = await prisma.pengaduan.create({
         data: {
             userId : user_id,
-            kendala,
+            pengaduan,
             kategori,
         },
         });
 
         const response = await supabase.channel("all_changes").send({
             type: "broadcast",
-            event: "new_kendala",
-            payload: newKendala,
+            event: "new_pengaduan",
+            payload: newPengaduan,
         });
 
         console.log("Supabase Event Sent:", response);
 
 
-        res.status(200).json({ success: true, data: newKendala });
+        res.status(200).json({ success: true, data: newPengaduan });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
-const updateKendala = async (req, res) => {
+const updatePengaduan = async (req, res) => {
     const { id , user_id } = req.params;
-    const { kendala , kategori } = req.body;
+    const { pengaduan , kategori } = req.body;
 
     try {
-        const updatedKendala = await prisma.kendala.update({
+        const updatedPengaduan= await prisma.pengaduan.update({
             where: { id: id ,userId: user_id },
-            data: { kendala, kategori },
+            data: { pengaduan, kategori },
         });
 
         // Kirim event realtime ke Supabase
         const response = await supabase.channel("all_changes").send({
             type: "broadcast",
-            event: "updated_kendala",
-            payload: updatedKendala,
+            event: "updated_Pengaduan",
+            payload: updatedPengaduan,
         });
 
         console.log("Supabase Event Sent:", response);
 
-        res.status(200).json({ success: true, data: updatedKendala });
+        res.status(200).json({ success: true, data: updatedPengaduan });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
-const deleteKendala = async (req, res) => {
+const deletePengaduan = async (req, res) => {
     try {
         const { user_id, id } = req.params;
-        const deleted = await prisma.kendala.delete({
+        const deleted = await prisma.pengaduan.delete({
             where: {  userId: user_id, id: id, }
         });
         const response = await supabase.channel("all_changes").send({
@@ -97,4 +97,4 @@ const deleteKendala = async (req, res) => {
     }
 };
 
-module.exports = {getKendala, createKendala, updateKendala, deleteKendala};
+module.exports = {getPengaduan, createPengaduan, updatePengaduan, deletePengaduan};
