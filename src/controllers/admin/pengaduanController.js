@@ -9,7 +9,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
 // Get All Kendala
 const kendala = async (req, res) => {
     try {
-        const allUsers = await prisma.kendala.findMany({});
+        const allUsers = await prisma.pengaduan.findMany({});
         res.status(200).json({ message: "Success", data: allUsers });
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
@@ -29,7 +29,7 @@ const updateKendala = async (req, res) => {
 
         console.log("ID yang diterima:", id);
 
-        const updatedKendala = await prisma.kendala.update({
+        const updatedKendala = await prisma.pengaduan.update({
             where: { id: id },
             data: { 
                 status_kendala: status_kendala , 
