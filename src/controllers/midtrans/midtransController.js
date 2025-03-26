@@ -9,27 +9,6 @@ let snap = new midtransClient.Snap({
   serverKey: process.env.MIDTRANS_SERVER_KEY,
 });
 
-// const tokenizer = async (req, res) => {
-//     const { id, username, nominal } = req.body;
-//     try {
-//         let parameter = {
-//             item_details: {
-//                 name: username,
-//                 price: nominal,
-//                 quantity: 1
-//             },
-//             transaction_details: {
-//                 order_id: id,
-//                 gross_amount: nominal,
-//             }
-//         }
-//         const response = await snap.createTransactionToken(parameter);
-//         res.status(200).json({ success: true, snap_token: response });
-//     }catch(error){
-//         res.status(500).json({ message: error.message});
-//     }
-// };
-
 const tokenizer = async (req, res) => {
   try {
     const { id } = req.body; // Ambil ID tagihan dari request
