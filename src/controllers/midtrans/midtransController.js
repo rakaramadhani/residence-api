@@ -55,14 +55,12 @@ const tokenizer = async (req, res) => {
     res.status(200).json({ success: true, snap_token: transactionToken });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Terjadi kesalahan",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Terjadi kesalahan",
+      error: error.message,
+    });
   }
 };
 
-module.exports = { tokenizer };
+module.exports = { tokenizer, checkTransaksi };
