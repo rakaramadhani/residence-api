@@ -1,0 +1,17 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="text/javascript"
+            src="https://app.sandbox.midtrans.com/snap/snap.js"
+            data-client-key="SB-Mid-client-zHW-GzDnulHC8bbY"></script>
+  </head>
+  <body>
+    <button id="pay-button">Pay!</button>
+    <script type="text/javascript">
+      var payButton = document.getElementById('pay-button');
+      payButton.addEventListener('click', function () {
+        snap.pay('0e37931f-3fe6-4f81-b201-34654b478c35');
+      });
+    </script>
+  </body>
+</html>

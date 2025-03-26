@@ -9,6 +9,12 @@ let snap = new midtransClient.Snap({
   serverKey: process.env.MIDTRANS_SERVER_KEY,
 });
 
+const coreApi = new midtransClient.CoreApi({
+  isProduction: false,
+  clientKey: process.env.MIDTRANS_CLIENT,
+  serverKey: process.env.MIDTRANS_SERVER_KEY,
+});
+
 // const tokenizer = async (req, res) => {
 //     const { id, username, nominal } = req.body;
 //     try {
@@ -29,6 +35,16 @@ let snap = new midtransClient.Snap({
 //         res.status(500).json({ message: error.message});
 //     }
 // };
+
+const checkTransaksi = async (req, res) => {
+  const { orderId } = req.params;
+  try {
+    const transactionStatus = await coreApi.transaction.status(orderId);
+    res.status(200).json(transactionStatus);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 const tokenizer = async (req, res) => {
   try {
@@ -76,14 +92,12 @@ const tokenizer = async (req, res) => {
     res.status(200).json({ success: true, snap_token: transactionToken });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Terjadi kesalahan",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Terjadi kesalahan",
+      error: error.message,
+    });
   }
 };
 
-module.exports = { tokenizer };
+module.exports = { tokenizer, checkTransaksi };
