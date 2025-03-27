@@ -22,7 +22,7 @@ model User {
     tipe_rumah TipeRumah?
     isVerified Boolean?
     feedback   String?
-    tagihan    Tagihan[]
+    tagihan      Tagihan[]
     transaksi  Transaksi[]
     broadcast  Broadcast[]
     anggota    Anggota[]
@@ -50,10 +50,17 @@ model Tagihan {
     bulan        Int
     tahun        Int
     nominal      Int
+    transaksi Transaksi[]
     createdAt    DateTime    @default(now())
-    status_bayar StatusBayar @default(belum_lunas)
+    status_bayar StatusBayar @default(belumLunas)
 }
 
+
+enum StatusBayar {
+    belumLunas
+    verifikasi
+    lunas
+}
 enum MetodeBayar {
     manual
     otomatis
@@ -61,9 +68,10 @@ enum MetodeBayar {
 
 model Transaksi {
   id               String   @id @default(uuid()) // ID unik transaksi
-  midtransId       String   @unique // transaction_id dari Midtrans
-  orderId          String   @unique // order_id dari Midtrans
-  userId           String   // ID user yang melakukan transaksi
+  order         Tagihan   @relation(fields: [orderId], references: [id])
+  orderId          String   @db.Uuid
+  user         User        @relation(fields: [userId], references: [id])
+  userId       String      @db.Uuid
   grossAmount      Decimal  // Jumlah transaksi (gross_amount)
   currency         String   // Mata uang (currency)
   paymentType      String   // Jenis pembayaran (payment_type)
@@ -77,10 +85,6 @@ model Transaksi {
 }
 
 
-enum StatusBayar {
-    belum_lunas
-    lunas
-}
 
 // BroadCast Data
 model Broadcast {
@@ -110,7 +114,16 @@ model Anggota {
     gender        Gender
     tempat_lahir  String
     tanggal_lahir DateTime
+    agama         String
+    status_perkawinan StatusPerkawinan 
+    pekerjaan     String
+    warga_negara   String
     ktp           String
+}
+
+enum StatusPerkawinan {
+    BelumMenikah
+    Menikah
 }
 
 enum Gender {
