@@ -54,6 +54,7 @@ model Tagihan {
     status_bayar StatusBayar @default(belumLunas)
 }
 
+
 enum StatusBayar {
     belumLunas
     verifikasi
