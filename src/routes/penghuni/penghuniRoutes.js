@@ -2,7 +2,7 @@ const express = require("express");
 const { authenticatePenghuni } = require("../../middleware/authPenghuni");
 const router = express.Router();
 const {emergency} = require("../../controllers/penghuni/emergencyController");
-const {tokenizer, checkTransaksi} = require("../../controllers/midtrans/midtransController");
+const {tokenizer, checkTransaksi, handleNotification} = require("../../controllers/midtrans/midtransController");
 
 const {
   getFamilyData,
@@ -51,5 +51,6 @@ router.post("/user/emergency/:user_id",authenticatePenghuni, emergency);
 // midtrans 
 router.post("/user/payment/tokenizer",authenticatePenghuni, tokenizer);
 router.get("/user/payment/check-status/:orderId",authenticatePenghuni, checkTransaksi);
+router.post("/user/payment/notification", handleNotification);
 
 module.exports = router;
