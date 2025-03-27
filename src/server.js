@@ -27,12 +27,14 @@ async function initializeSeeder() {
     await seeder();
   } catch (e) {
     console.error(e);
-    process.exit(1);
   } finally {
     await prisma.$disconnect();
   }
 }
-
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send({ error: "Internal Server Error" });
+  });
 // Jalankan seeder sebelum menerima request
 initializeSeeder();
 
