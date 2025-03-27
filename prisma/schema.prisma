@@ -22,7 +22,7 @@ model User {
     tipe_rumah TipeRumah?
     isVerified Boolean?
     feedback   String?
-    tagihan      Tagihan[]
+    tagihan    Tagihan[]
     transaksi  Transaksi[]
     broadcast  Broadcast[]
     anggota    Anggota[]
@@ -46,45 +46,43 @@ model Tagihan {
     id           String      @id @default(uuid()) @db.Uuid
     user         User        @relation(fields: [userId], references: [id])
     userId       String      @db.Uuid
-    metode_bayar  MetodeBayar
+    metode_bayar MetodeBayar
     bulan        Int
     tahun        Int
     nominal      Int
-    transaksi Transaksi[]
+    transaksi    Transaksi[]
     createdAt    DateTime    @default(now())
     status_bayar StatusBayar @default(belumLunas)
 }
-
 
 enum StatusBayar {
     belumLunas
     verifikasi
     lunas
 }
+
 enum MetodeBayar {
     manual
     otomatis
 }
 
 model Transaksi {
-  id               String   @id @default(uuid()) // ID unik transaksi
-  order         Tagihan   @relation(fields: [orderId], references: [id])
-  orderId          String   @db.Uuid
-  user         User        @relation(fields: [userId], references: [id])
-  userId       String      @db.Uuid
-  grossAmount      Decimal  // Jumlah transaksi (gross_amount)
-  currency         String   // Mata uang (currency)
-  paymentType      String   // Jenis pembayaran (payment_type)
-  transactionStatus String  // Status transaksi (transaction_status)
-  fraudStatus      String   // Status fraud (fraud_status)
-  vaBank           String?  // Nama bank (dari va_numbers)
-  vaNumber         String?  // Nomor VA (dari va_numbers)
-  transactionTime  DateTime // Waktu transaksi (transaction_time)
-  settlementTime   DateTime? // Waktu settlement (settlement_time)
-  expiryTime       DateTime // Waktu kedaluwarsa pembayaran (expiry_time)
+    id                String    @id @default(uuid()) // ID unik transaksi
+    order             Tagihan   @relation(fields: [orderId], references: [id])
+    orderId           String    @db.Uuid
+    user              User      @relation(fields: [userId], references: [id])
+    userId            String    @db.Uuid
+    grossAmount       Decimal // Jumlah transaksi (gross_amount)
+    currency          String // Mata uang (currency)
+    paymentType       String // Jenis pembayaran (payment_type)
+    transactionStatus String // Status transaksi (transaction_status)
+    fraudStatus       String // Status fraud (fraud_status)
+    vaBank            String? // Nama bank (dari va_numbers)
+    vaNumber          String? // Nomor VA (dari va_numbers)
+    transactionTime   DateTime // Waktu transaksi (transaction_time)
+    settlementTime    DateTime? // Waktu settlement (settlement_time)
+    expiryTime        DateTime // Waktu kedaluwarsa pembayaran (expiry_time)
 }
-
-
 
 // BroadCast Data
 model Broadcast {
@@ -106,19 +104,19 @@ enum StatusBroadcast {
 
 // Data Anggota Keluarga
 model Anggota {
-    id            String   @id @default(uuid()) @db.Uuid
-    user          User     @relation(fields: [userId], references: [id])
-    userId        String   @db.Uuid
-    nama          String
-    nik           Int
-    gender        Gender
-    tempat_lahir  String
-    tanggal_lahir DateTime
-    agama         String
-    status_perkawinan StatusPerkawinan 
-    pekerjaan     String
-    warga_negara   String
-    ktp           String
+    id                String           @id @default(uuid()) @db.Uuid
+    user              User             @relation(fields: [userId], references: [id])
+    userId            String           @db.Uuid
+    nama              String
+    nik               Int
+    gender            Gender
+    tempat_lahir      String
+    tanggal_lahir     DateTime
+    agama             String
+    status_perkawinan StatusPerkawinan
+    pekerjaan         String
+    warga_negara      String
+    ktp               String
 }
 
 enum StatusPerkawinan {
