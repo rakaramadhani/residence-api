@@ -3,6 +3,7 @@ const { authenticatePenghuni } = require("../../middleware/authPenghuni");
 const router = express.Router();
 const {emergency} = require("../../controllers/penghuni/emergencyController");
 const {tokenizer, checkTransaksi, handleNotification} = require("../../controllers/midtrans/midtransController");
+const { getSurat, createSurat } = require("../../controllers/penghuni/suratController");
 
 const {
   getFamilyData,
@@ -52,5 +53,9 @@ router.post("/user/emergency/:user_id",authenticatePenghuni, emergency);
 router.post("/user/payment/tokenizer",authenticatePenghuni, tokenizer);
 router.get("/user/payment/check-status/:orderId",authenticatePenghuni, checkTransaksi);
 router.post("/user/payment/notification", handleNotification);
+
+// surat
+router.get("/user/:user_id/surat", authenticatePenghuni, getSurat);
+router.post("/user/:user_id/surat", authenticatePenghuni, createSurat);
 
 module.exports = router;

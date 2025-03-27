@@ -27,6 +27,7 @@ model User {
     anggota    Anggota[]
     Pengaduan  Pengaduan[]
     panic      Panic[]
+    surat      Surat[]
 }
 
 enum Role {
@@ -114,6 +115,7 @@ model Anggota {
     pekerjaan         String
     warga_negara      String
     ktp               String
+    surat             Surat[]
 }
 
 enum StatusPerkawinan {
@@ -170,3 +172,22 @@ model Panic {
     created_at DateTime @default(now())
     updatedAt  DateTime @updatedAt
 }
+
+// surat
+model Surat {
+    id        String   @id @default(uuid()) @db.Uuid
+    user      User     @relation(fields: [userId], references: [id])
+    userId    String   @db.Uuid
+    anggota   Anggota  @relation(fields: [anggotaId], references: [id])
+    anggotaId String   @db.Uuid
+    deskripsi     String?
+    status StatusSurat @default(requested)
+    feedback String?
+    createdAt DateTime @default(now())
+}
+enum StatusSurat {
+    requested
+    approved
+    rejected
+}
+
