@@ -8,13 +8,18 @@ let snap = new midtransClient.Snap({
   clientKey: process.env.MIDTRANS_CLIENT,
   serverKey: process.env.MIDTRANS_SERVER_KEY,
 });
+const coreApi = new midtransClient.CoreApi({
+  isProduction: false,
+  clientKey: process.env.MIDTRANS_CLIENT,
+  serverKey: process.env.MIDTRANS_SERVER_KEY,
+});
 
 const tokenizer = async (req, res) => {
   try {
     const { id } = req.body; // Ambil ID tagihan dari request
 
     // Ambil data tagihan dari database berdasarkan ID
-    const tagihan = await prisma.iuran.findUnique({
+    const tagihan = await prisma.tagihan.findUnique({
       where: { id: id },
       include: {
         user: true,
@@ -62,7 +67,16 @@ const tokenizer = async (req, res) => {
     });
   }
 };
-
+// cek transaksi
+const checkTransaksi = async (req, res) => {
+  const { orderId } = req.params;
+  try {
+    const transactionStatus = await coreApi.transaction.status(orderId);
+    res.status(200).json(transactionStatus);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 // tes ubah status
 const handleNotification = async (req, res) => {
   try {
@@ -82,44 +96,53 @@ const handleNotification = async (req, res) => {
     });
 
     if (!tagihan) {
-      return res.status(404).json({ success: false, message: "Tagihan tidak ditemukan" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Tagihan tidak ditemukan" });
     }
 
     // Simpan data notifikasi ke tabel transaksi
-    await prisma.transaksi.create({
-      data: {
-        orderId: orderId,
-        userId: tagihan.userId,
-        grossAmount: parseFloat(notification.gross_amount),
-        currency: notification.currency,
-        paymentType: notification.payment_type,
-        transactionStatus: notification.transaction_status,
-        fraudStatus: notification.fraud_status || null,
-        vaBank: notification.biller_code || null, // Nama bank atau kode biller
-        vaNumber: notification.bill_key || null, // Nomor virtual account
-        transactionTime: new Date(notification.transaction_time),
-        settlementTime: notification.settlement_time ? new Date(notification.settlement_time) : null,
-        expiryTime: new Date(notification.expiry_time),
-      },
-    });
 
     // Periksa apakah transaksi berhasil
     if (transactionStatus === "settlement") {
-      // Update status pembayaran menjadi lunas
+    //  update status tagihan
       await prisma.tagihan.update({
         where: { id: tagihanId },
         data: { status_bayar: "lunas", metode_bayar: "otomatis" },
+      });
+      await prisma.transaksi.create({
+        data: {
+          userId: tagihan.userId,
+          grossAmount: parseFloat(notification.gross_amount),
+          currency: notification.currency,
+          paymentType: notification.payment_type,
+          transactionStatus: notification.transaction_status,
+          fraudStatus: notification.fraud_status || null,
+          vaBank: notification.biller_code || null,
+          vaNumber: notification.bill_key || null,
+          transactionTime: new Date(notification.transaction_time),
+          settlementTime: notification.settlement_time
+            ? new Date(notification.settlement_time)
+            : null,
+          expiryTime: notification.expiry_time
+            ? new Date(notification.expiry_time)
+            : null,
+          order: {
+            connect: { id: tagihan.id }, // Hubungkan dengan Tagihan yang sudah ada
+          }
+        },
       });
     }
 
     res.status(200).json({ success: true, message: "Notifikasi diproses" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Terjadi kesalahan", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Terjadi kesalahan",
+      error: error.message,
+    });
   }
 };
 
 module.exports = { tokenizer, checkTransaksi, handleNotification };
-
-
-
