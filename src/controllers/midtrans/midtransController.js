@@ -73,7 +73,7 @@ const handleNotification = async (req, res) => {
     const transactionStatus = notification.transaction_status;
 
     // Ambil ID tagihan dari orderId (karena kita tambahkan prefix "INV-")
-    const tagihanId = orderId.replace("INV-", "");
+    const tagihanId = orderId;
 
     // Ambil data tagihan dari database
     const tagihan = await prisma.tagihan.findUnique({
