@@ -22,7 +22,7 @@ model User {
     tipe_rumah TipeRumah?
     isVerified Boolean?
     feedback   String?
-    tagihan      Tagihan[]
+    tagihan    Tagihan[]
     broadcast  Broadcast[]
     anggota    Anggota[]
     Pengaduan  Pengaduan[]
@@ -45,7 +45,7 @@ model Tagihan {
     id           String      @id @default(uuid()) @db.Uuid
     user         User        @relation(fields: [userId], references: [id])
     userId       String      @db.Uuid
-    metode_bayar  MetodeBayar @default(otomatis)
+    metode_bayar MetodeBayar @default(otomatis)
     bulan        Int
     tahun        Int
     nominal      Int
@@ -56,30 +56,29 @@ model Tagihan {
 
 enum StatusBayar {
     belumLunas
-    verifikasi
     lunas
+}
+
+model Transaksi {
+    id                String    @id @default(uuid()) // ID unik transaksi
+    order             Tagihan   @relation(fields: [orderId], references: [id])
+    orderId           String    @db.Uuid
+    userId            String
+    grossAmount       Decimal // Jumlah transaksi (gross_amount)
+    currency          String // Mata uang (currency)
+    paymentType       String // Jenis pembayaran (payment_type)
+    transactionStatus String // Status transaksi (transaction_status)
+    fraudStatus       String // Status fraud (fraud_status)
+    vaBank            String? // Nama bank (dari va_numbers)
+    vaNumber          String? // Nomor VA (dari va_numbers)
+    transactionTime   DateTime? // Waktu transaksi (transaction_time)
+    settlementTime    DateTime? // Waktu settlement (settlement_time)
+    expiryTime        DateTime? // Waktu kedaluwarsa pembayaran (expiry_time)
 }
 
 enum MetodeBayar {
     manual
     otomatis
-}
-
-model Transaksi {
-  id               String   @id @default(uuid()) // ID unik transaksi
-  order         Tagihan   @relation(fields: [orderId], references: [id])
-  orderId          String   @db.Uuid
-  userId           String   
-  grossAmount      Decimal  // Jumlah transaksi (gross_amount)
-  currency         String   // Mata uang (currency)
-  paymentType      String   // Jenis pembayaran (payment_type)
-  transactionStatus String  // Status transaksi (transaction_status)
-  fraudStatus      String   // Status fraud (fraud_status)
-  vaBank           String?  // Nama bank (dari va_numbers)
-  vaNumber         String?  // Nomor VA (dari va_numbers)
-  transactionTime  DateTime? // Waktu transaksi (transaction_time)
-  settlementTime   DateTime? // Waktu settlement (settlement_time)
-  expiryTime       DateTime? // Waktu kedaluwarsa pembayaran (expiry_time)
 }
 
 // BroadCast Data

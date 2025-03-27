@@ -5,7 +5,7 @@ const { pengaduan, updatePengaduan } = require("../../controllers/admin/pengadua
 const { broadcast, updateBroadcast} = require("../../controllers/admin/broadcastController");
 const { getEmergency } = require("../../controllers/admin/emergencyController");
 const { createPeraturan, deletePeraturan, updatePeraturan } = require("../../controllers/admin/peraturanController");
-const { getTagihan, createTagihan} = require("../../controllers/admin/tagihanController");
+const { getTagihan, createTagihan, updateTagihan} = require("../../controllers/admin/tagihanController");
 
 const router = express.Router();
 
@@ -33,6 +33,7 @@ router.get("/admin/emergency", authenticateAdmin, getEmergency);
 
 // tagihan
 router.get("/admin/tagihan",authenticateAdmin, getTagihan);
-router.post("/admin/tagihan",authenticateAdmin, createTagihan);
+router.put("/admin/tagihan/:id",authenticateAdmin, updateTagihan);
+router.post("/admin/tagihan/generate",authenticateAdmin, createTagihan);
 
 module.exports = router;

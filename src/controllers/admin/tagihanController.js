@@ -10,16 +10,66 @@ const getTagihan = async (req, res) => {
     }
 };
 
-const createTagihan = async (req, res) => {
-    const { userId, bulan, tahun, nominal } = req.body;
+const updateTagihan = async (req, res) => {
     try {
-        const tagihan = await prisma.tagihan.create({
-            data: { userId, bulan, tahun, nominal },
-    });
-    res.status(201).json({ success: true, data: tagihan });
+        const { id } = req.params;
+        const updateData = {}; // Objek kosong untuk menyimpan data yang akan diupdate
+
+        if (req.body.status_bayar) updateData.status_bayar = req.body.status_bayar;
+        if (req.body.metode_bayar) updateData.metode_bayar = req.body.metode_bayar;
+        if (req.body.nominal) updateData.nominal = req.body.nominal;
+
+        const tagihan = await prisma.tagihan.update({
+            where: { id },
+            data: updateData, // Hanya update kolom yang dikirim
+        });
+
+        res.status(200).json({ success: true, data: tagihan });
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
 
-module.exports = { getTagihan, createTagihan };
+
+const createTagihan = async (req, res) => {
+    try {
+        // Ambil parameter pengecualian dari body request (opsional)
+        const { userIds } = req.body; // Array of user IDs (jika hanya untuk user tertentu)
+
+        // Ambil semua user yang memiliki role "penghuni"
+        let users = await prisma.user.findMany({
+            where: {
+                role: "penghuni",
+                ...(userIds && { id: { in: userIds } }) // Filter jika hanya user tertentu
+            }
+        });
+
+        // Cek apakah ada user yang memenuhi syarat
+        if (users.length === 0) {
+            return res.status(404).json({ success: false, message: "Tidak ada pengguna yang memenuhi syarat" });
+        }
+
+        const bulan = new Date().getMonth() + 1;
+        const tahun = new Date().getFullYear();
+        const tagihanList = [];
+
+        for (const user of users) {
+            const tagihan = await prisma.tagihan.create({
+                data: {
+                    userId: user.id,
+                    metode_bayar: "otomatis",
+                    bulan,
+                    tahun,
+                    nominal: 50000,
+                },
+            });
+            tagihanList.push(tagihan);
+        }
+
+        res.status(201).json({ success: true, data: tagihanList });
+    } catch (error) {
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+};
+
+module.exports = { getTagihan, createTagihan, updateTagihan };
