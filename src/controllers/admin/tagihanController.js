@@ -14,7 +14,7 @@ const createTagihan = async (req, res) => {
     const { userId, bulan, tahun, nominal } = req.body;
     try {
         const tagihan = await prisma.tagihan.create({
-            data: { userId,bulan,tahun,nominal },
+            data: { userId, bulan, tahun, nominal },
     });
     res.status(201).json({ success: true, data: tagihan });
     } catch (error) {
