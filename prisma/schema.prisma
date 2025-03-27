@@ -22,7 +22,7 @@ model User {
     tipe_rumah TipeRumah?
     isVerified Boolean?
     feedback   String?
-    iuran      Iuran[]
+    tagihan    Tagihan[]
     transaksi  Transaksi[]
     broadcast  Broadcast[]
     anggota    Anggota[]
@@ -42,31 +42,43 @@ enum TipeRumah {
 }
 
 // Data Iuran
-model Iuran {
+model Tagihan {
     id           String      @id @default(uuid()) @db.Uuid
     user         User        @relation(fields: [userId], references: [id])
     userId       String      @db.Uuid
+    metode_bayar  MetodeBayar
     bulan        Int
     tahun        Int
     nominal      Int
     createdAt    DateTime    @default(now())
-    status_bayar StatusBayar @default(verifikasi)
+    status_bayar StatusBayar @default(belum_lunas)
+}
+
+enum MetodeBayar {
+    manual
+    otomatis
 }
 
 model Transaksi {
-    id              String   @id @default(uuid()) @db.Uuid
-    user            User     @relation(fields: [userId], references: [id])
-    userId          String   @db.Uuid
-    midtransOrderId String   @unique
-    totalNominal    Int
-    status          String
-    paidMonth       Int
-    paidYear        Int
-    createdAt       DateTime @default(now())
+  id               String   @id @default(uuid()) // ID unik transaksi
+  midtransId       String   @unique // transaction_id dari Midtrans
+  orderId          String   @unique // order_id dari Midtrans
+  userId           String   // ID user yang melakukan transaksi
+  grossAmount      Decimal  // Jumlah transaksi (gross_amount)
+  currency         String   // Mata uang (currency)
+  paymentType      String   // Jenis pembayaran (payment_type)
+  transactionStatus String  // Status transaksi (transaction_status)
+  fraudStatus      String   // Status fraud (fraud_status)
+  vaBank           String?  // Nama bank (dari va_numbers)
+  vaNumber         String?  // Nomor VA (dari va_numbers)
+  transactionTime  DateTime // Waktu transaksi (transaction_time)
+  settlementTime   DateTime? // Waktu settlement (settlement_time)
+  expiryTime       DateTime // Waktu kedaluwarsa pembayaran (expiry_time)
 }
 
+
 enum StatusBayar {
-    verifikasi
+    belum_lunas
     lunas
 }
 

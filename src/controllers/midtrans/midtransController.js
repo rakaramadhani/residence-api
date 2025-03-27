@@ -9,12 +9,27 @@ let snap = new midtransClient.Snap({
   serverKey: process.env.MIDTRANS_SERVER_KEY,
 });
 
+const coreApi = new midtransClient.CoreApi({
+  isProduction: false,
+  clientKey: process.env.MIDTRANS_CLIENT,
+  serverKey: process.env.MIDTRANS_SERVER_KEY,
+});
+
+const checkTransaksi = async (req, res) => {
+  const { orderId } = req.params;
+  try {
+    const transactionStatus = await coreApi.transaction.status(orderId);
+    res.status(200).json(transactionStatus);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 const tokenizer = async (req, res) => {
   try {
     const { id } = req.body; // Ambil ID tagihan dari request
-
     // Ambil data tagihan dari database berdasarkan ID
-    const tagihan = await prisma.iuran.findUnique({
+    const tagihan = await prisma.tagihan.findUnique({
       where: { id: id },
       include: {
         user: true,
