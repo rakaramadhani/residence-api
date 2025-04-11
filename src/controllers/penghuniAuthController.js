@@ -86,12 +86,12 @@ const userDetails = async (req, res) => {
 // lengkapi data user
 const updateDataUser = async (req, res) => {
   const { user_id } = req.params;
-  const { password, phone, rt, rw, nomor_rumah,cluster } = req.body;
+  const { password, phone, username } = req.body;
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const userDetailData = await prisma.user.update({
       where: { id: user_id },
-      data: {  password: hashedPassword, phone, rt, rw, nomor_rumah, cluster },
+      data: {  password: hashedPassword, phone, username },
     });
     const response = await supabase.channel("all_changes").send({
       type: "broadcast",
@@ -103,6 +103,23 @@ const updateDataUser = async (req, res) => {
     res.status(200).json({ message: "success", data: userDetailData });
   } catch (error) {
     return res.status(500).json({ message: error.message });
+  }
+};
+// cek username
+const checkUsername = async (req, res) => {
+  const { username } = req.body;
+  try {
+    const existingUser = await prisma.user.findUnique({
+      where: { username: username },
+    });
+    if (existingUser) {
+      return res.status(400).json({ message: "Username already exists" });
+    }
+    return res.status(200).json({ message: "Username is available" });
+  }
+  catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -197,4 +214,5 @@ module.exports = {
   resetPassword,
   changePassword,
   updateDataUser,
+  checkUsername
 };
