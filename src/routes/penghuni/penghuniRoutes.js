@@ -4,7 +4,7 @@ const router = express.Router();
 const {emergency} = require("../../controllers/penghuni/emergencyController");
 const {tokenizer, checkTransaksi, handleNotification} = require("../../controllers/midtrans/midtransController");
 const { getSurat, createSurat } = require("../../controllers/penghuni/suratController");
-
+const { getTagihan } = require("../../controllers/penghuni/tagihanController");
 const {
   getFamilyData,
   createFamilyData,
@@ -53,6 +53,10 @@ router.post("/user/emergency/:user_id",authenticatePenghuni, emergency);
 router.post("/user/payment/tokenizer",authenticatePenghuni, tokenizer);
 router.get("/user/payment/check-status/:orderId",authenticatePenghuni, checkTransaksi);
 router.post("/user/payment/notification", handleNotification);
+
+// tagihan
+router.get("/user/:user_id/tagihan", authenticatePenghuni,getTagihan);
+
 
 // surat
 router.get("/user/:user_id/surat", authenticatePenghuni, getSurat);

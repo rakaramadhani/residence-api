@@ -66,8 +66,10 @@ const userDetails = async (req, res) => {
         username: true,
         email: true,
         phone:true,
-        blok_rumah: true,
-        tipe_rumah: true,
+        nomor_rumah: true,
+        rt: true,
+        rw: true,
+        cluster: true
       },
     });
     if (!user) {
@@ -84,12 +86,12 @@ const userDetails = async (req, res) => {
 // lengkapi data user
 const updateDataUser = async (req, res) => {
   const { user_id } = req.params;
-  const { password, phone, blok_rumah, tipe_rumah } = req.body;
+  const { password, phone, rt, rw, nomor_rumah,cluster } = req.body;
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const userDetailData = await prisma.user.update({
       where: { id: user_id },
-      data: {  password: hashedPassword, phone, blok_rumah, tipe_rumah },
+      data: {  password: hashedPassword, phone, rt, rw, nomor_rumah, cluster },
     });
     const response = await supabase.channel("all_changes").send({
       type: "broadcast",

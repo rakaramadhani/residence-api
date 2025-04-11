@@ -18,8 +18,10 @@ model User {
     password   String
     phone      String?
     role       Role        @default(penghuni)
-    blok_rumah String?
-    tipe_rumah TipeRumah?
+    nomor_rumah String?
+    rt        String?
+    rw        String?
+    cluster Cluster?
     isVerified Boolean?
     feedback   String?
     tagihan    Tagihan[]
@@ -35,7 +37,7 @@ enum Role {
     admin
 }
 
-enum TipeRumah {
+enum Cluster {
     ChairaTownHouse
     GrandCeleste
     Calosa

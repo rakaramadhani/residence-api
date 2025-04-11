@@ -73,11 +73,29 @@ const checkTransaksi = async (req, res) => {
   const { orderId } = req.params;
   try {
     const transactionStatus = await coreApi.transaction.status(orderId);
-    res.status(200).json(transactionStatus);
+
+    const { payment_type, transaction_time, issuer, acquirer } = transactionStatus;
+
+    res.status(200).json({
+      payment_type,
+      transaction_time,
+      issuer,
+      acquirer
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
+// const checkTransaksi = async (req, res) => {
+//   const { orderId } = req.params;
+//   try {
+//     const transactionStatus = await coreApi.transaction.status(orderId);
+//     res.status(200).json(transactionStatus);
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
 // tes ubah status
 const handleNotification = async (req, res) => {
   try {
