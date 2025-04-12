@@ -4,7 +4,7 @@ const { users, createUser, detail, verifikasiUser } = require("../../controllers
 const { pengaduan, updatePengaduan } = require("../../controllers/admin/pengaduanController");
 const { broadcast, updateBroadcast} = require("../../controllers/admin/broadcastController");
 const { getEmergency } = require("../../controllers/admin/emergencyController");
-const { createPeraturan, deletePeraturan, updatePeraturan } = require("../../controllers/admin/peraturanController");
+const { createPeraturan, deletePeraturan, updatePeraturan, getPeraturan } = require("../../controllers/admin/peraturanController");
 const { getTagihan, createTagihan, updateTagihan} = require("../../controllers/admin/tagihanController");
 const { getSurat, updateSurat } = require("../../controllers/admin/suratController");
 
@@ -21,7 +21,8 @@ router.get("/admin/pengaduan", authenticateAdmin, pengaduan);
 router.put("/admin/pengaduan/:id", authenticateAdmin, updatePengaduan);
 
 // Peraturan
-router.get("/admin/peraturan", authenticateAdmin, createPeraturan);
+router.post("/admin/peraturan", authenticateAdmin, createPeraturan);
+router.get("/admin/peraturan", authenticateAdmin, getPeraturan);
 router.put("/admin/peraturan/:id", authenticateAdmin, updatePeraturan);
 router.delete("/admin/peraturan/:id", authenticateAdmin, deletePeraturan);
 

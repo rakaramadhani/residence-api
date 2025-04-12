@@ -3,7 +3,6 @@ const bcrypt = require('bcrypt');
 const prisma = new PrismaClient();
 
 async function seeder() {
-    // Ngecek Admin
     const adminCheck = await prisma.user.findUnique({
         where: { email: "admin@gmail.com"},
     });
