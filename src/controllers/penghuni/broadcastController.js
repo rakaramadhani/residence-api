@@ -11,7 +11,9 @@ const prisma = new PrismaClient();
 // get all broadcast
 const getAllBroadcast = async (req, res) => {
     try{
-        const allBroadcast = await prisma.broadcast.findMany({});
+        const allBroadcast = await prisma.broadcast.findMany({
+            where: {status_broadcast:"approved"}, include: { user: { select: { username: true, email: true } } },
+        });
         res.status(200).json({message:"success", data: allBroadcast});
     }catch(error){
         res.status(500).json({ message: "Internal Server Error", error: error.message });
@@ -34,6 +36,38 @@ const getBroadcast = async (req, res) => {
     }
 };
 
+// broadcast dari admin 
+const getAdminBroadcast = async (req, res) => {
+    try {
+      const latestBroadcast = await prisma.broadcast.findFirst({
+        where: {
+          user: {
+            role: 'admin',
+          },
+        },
+        orderBy: {
+          createdAt: 'desc', // ambil yang terbaru
+        },
+        include: {
+          user: {
+            select: {
+              username: true,
+              email: true,
+            },
+          },
+        },
+      });
+  
+      if (!latestBroadcast) {
+        return res.status(404).json({ message: "Tidak ada broadcast dari admin" });
+      }
+  
+      res.status(200).json({ message: "Success", data: latestBroadcast });
+    } catch (error) {
+      res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+  };
+  
 // Buat Broadcast
 const createBroadcast = async (req, res) => {
     const { user_id } = req.params;
@@ -103,4 +137,4 @@ const deleteBroadcast = async (req, res) => {
     }
 };
 
-module.exports = {getAllBroadcast,getBroadcast,createBroadcast,updateBroadcast,deleteBroadcast};
+module.exports = {getAllBroadcast,getBroadcast,getAdminBroadcast,createBroadcast,updateBroadcast,deleteBroadcast};

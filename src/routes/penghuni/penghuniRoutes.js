@@ -22,6 +22,7 @@ const {
 const{
   getAllBroadcast,
   getBroadcast,
+  getAdminBroadcast,
   createBroadcast,
   updateBroadcast,
   deleteBroadcast,
@@ -41,6 +42,7 @@ router.delete("/user/:user_id/pengaduan/:id",authenticatePenghuni, deletePengadu
 
 // Broadcast
 router.get("/user/broadcast", authenticatePenghuni, getAllBroadcast);
+router.get("/user/broadcast/admin", authenticatePenghuni, getAdminBroadcast);
 router.get("/user/:user_id/broadcast", authenticatePenghuni, getBroadcast);
 router.post("/user/:user_id/broadcast",authenticatePenghuni, createBroadcast);
 router.put("/user/:user_id/broadcast/:id",authenticatePenghuni, updateBroadcast);

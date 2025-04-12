@@ -6,6 +6,32 @@ dotenv.config();
 const prisma = new PrismaClient();
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
+// create broadcast
+// Buat Broadcast
+const createBroadcast = async (req, res) => {
+    const { user_id } = req.params;
+    const { broadcast, tanggal_acara} = req.body;
+    try {
+        // Simpan data ke database
+        const newBroadcast = await prisma.broadcast.create({
+        data :{ userId: user_id, broadcast, tanggal_acara, status_broadcast: "approved" }
+        });
+
+        const response = await supabase.channel("all_changes").send({
+            type: "broadcast",
+            event: "new_broadcast",
+            payload: newBroadcast,
+        });
+
+        console.log("Supabase Event Sent:", response);
+
+
+        res.status(201).json({ success: true, data: newBroadcast });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 // Get All Broadcast
 const broadcast = async (req, res) => {
     try {
@@ -43,4 +69,4 @@ const updateBroadcast = async (req, res) => {
 
 
 
-module.exports = {broadcast, updateBroadcast}
+module.exports = {broadcast, updateBroadcast, createBroadcast};

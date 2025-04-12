@@ -2,7 +2,7 @@ const express = require("express");
 const { authenticateAdmin } = require("../../middleware/authAdmin");
 const { users, createUser, detail, verifikasiUser } = require("../../controllers/admin/usersController");
 const { pengaduan, updatePengaduan } = require("../../controllers/admin/pengaduanController");
-const { broadcast, updateBroadcast} = require("../../controllers/admin/broadcastController");
+const { broadcast, updateBroadcast,createBroadcast} = require("../../controllers/admin/broadcastController");
 const { getEmergency } = require("../../controllers/admin/emergencyController");
 const { createPeraturan, deletePeraturan, updatePeraturan, getPeraturan } = require("../../controllers/admin/peraturanController");
 const { getTagihan, createTagihan, updateTagihan} = require("../../controllers/admin/tagihanController");
@@ -28,6 +28,7 @@ router.delete("/admin/peraturan/:id", authenticateAdmin, deletePeraturan);
 
 // broadcast
 router.get("/admin/broadcast", authenticateAdmin, broadcast);
+router.post("/admin/:user_id/broadcast", authenticateAdmin, createBroadcast);
 router.put("/admin/broadcast/:id", authenticateAdmin, updateBroadcast);
 
 // emergency
