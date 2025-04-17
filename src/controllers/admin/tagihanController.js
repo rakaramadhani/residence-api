@@ -63,10 +63,10 @@ const createTagihan = async (req, res) => {
                     nominal: 50000,
                 },
             });
-            tagihanList.push(tagihan);
+            // tagihanList.push(tagihan);
         }
 
-        res.status(201).json({ success: true, data: tagihanList });
+        res.status(201).json({ success: true, data: tagihan });
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
