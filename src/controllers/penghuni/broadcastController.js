@@ -77,16 +77,12 @@ const createBroadcast = async (req, res) => {
         const newBroadcast = await prisma.broadcast.create({
         data :{ userId: user_id, broadcast, tanggal_acara }
         });
-
         const response = await supabase.channel("all_changes").send({
             type: "broadcast",
             event: "new_broadcast",
             payload: newBroadcast,
         });
-
         console.log("Supabase Event Sent:", response);
-
-
         res.status(201).json({ success: true, data: newBroadcast });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

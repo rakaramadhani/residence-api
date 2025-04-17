@@ -18,8 +18,7 @@ const coreApi = new midtransClient.CoreApi({
 
 const tokenizer = async (req, res) => {
   try {
-    const { id } = req.body; // Ambil ID tagihan dari request
-    // Ambil data tagihan dari database berdasarkan ID
+    const { id } = req.body;
     const tagihan = await prisma.tagihan.findUnique({
       where: { id: id },
       include: {
@@ -27,7 +26,6 @@ const tokenizer = async (req, res) => {
       },
     });
 
-    // Jika tidak ditemukan
     if (!tagihan) {
       return res
         .status(404)
@@ -37,7 +35,7 @@ const tokenizer = async (req, res) => {
     // Parameter untuk Midtrans
     let parameter = {
       transaction_details: {
-        order_id: tagihan.id, // Bisa tambahkan prefix jika perlu
+        order_id: tagihan.id,
         gross_amount: tagihan.nominal,
       },
       item_details: [
@@ -98,21 +96,20 @@ const checkTransaksi = async (req, res) => {
 //     res.status(500).json({ error: error.message });
 //   }
 // };
-// tes ubah status
+
 const handleNotification = async (req, res) => {
   try {
     const notification = req.body;
 
-    // Ambil order_id dari notifikasi
-    const orderId = notification.order_id; // Sesuai dengan `INV-{tagihan.id}`
+    const orderId = notification.order_id;
     const transactionStatus = notification.transaction_status;
 
-    // Ambil ID tagihan dari orderId (karena kita tambahkan prefix "INV-")
-    const tagihanId = orderId;
+
+    const tagihanId = notification.orderId;
 
     // Ambil data tagihan dari database
     const tagihan = await prisma.tagihan.findUnique({
-      where: { id: tagihanId },
+      where: { id: orderId },
       include: { user: true },
     });
 
@@ -121,8 +118,6 @@ const handleNotification = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Tagihan tidak ditemukan" });
     }
-
-    // Simpan data notifikasi ke tabel transaksi
 
     // Periksa apakah transaksi berhasil
     if (transactionStatus === "settlement") {
@@ -149,7 +144,7 @@ const handleNotification = async (req, res) => {
             ? new Date(notification.expiry_time)
             : null,
           order: {
-            connect: { id: tagihan.id }, // Hubungkan dengan Tagihan yang sudah ada
+            connect: { id: tagihan.id },
           }
         },
       });
