@@ -48,6 +48,7 @@ const login = async (req, res) => {
         id: user.id,
         username: user.username,
         role: user.role,
+        isVerified: user.isVerified,
       },
       message: "Login successful",
     });

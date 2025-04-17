@@ -74,9 +74,10 @@ const checkTransaksi = async (req, res) => {
   try {
     const transactionStatus = await coreApi.transaction.status(orderId);
 
-    const { payment_type, gross_amount,transaction_time, issuer, acquirer } = transactionStatus;
+    const { order_id,payment_type, gross_amount,transaction_time, issuer, acquirer } = transactionStatus;
 
     res.status(200).json({
+      order_id,
       payment_type,
       gross_amount,
       transaction_time,
