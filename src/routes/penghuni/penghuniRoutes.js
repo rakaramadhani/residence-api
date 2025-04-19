@@ -50,7 +50,7 @@ router.put("/user/:user_id/broadcast/:id",authenticatePenghuni,checkVerified, up
 router.delete("/user/:user_id/broadcast/:id",authenticatePenghuni,checkVerified, deleteBroadcast);
 
 // emergency
-router.post("/user/emergency/:user_id",authenticatePenghuni,checkVerified, emergency);
+router.post("/user/:user_id/emergency",authenticatePenghuni,checkVerified, emergency);
 
 // midtrans 
 router.post("/user/payment/tokenizer",authenticatePenghuni,checkVerified, tokenizer);
