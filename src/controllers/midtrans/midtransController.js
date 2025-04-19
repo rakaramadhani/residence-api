@@ -101,31 +101,42 @@ const handleNotification = async (req, res) => {
   try {
     const notification = req.body;
 
-    const orderId = notification.order_id;
-    const transactionStatus = notification.transaction_status;
+    // Ekstrak UUID dari order_id Midtrans
+    const fullOrderId = notification.order_id;
+    const orderId = fullOrderId.split('_').pop(); // Ambil bagian UUID saja
+    const tagihanId = orderId;
 
-
-    const tagihanId = notification.orderId;
+    // Logging untuk debugging
+    console.log("Notifikasi diterima:", notification);
+    console.log("Tagihan ID (UUID):", tagihanId);
 
     // Ambil data tagihan dari database
     const tagihan = await prisma.tagihan.findUnique({
-      where: { id: orderId },
+      where: { id: tagihanId },
       include: { user: true },
     });
 
     if (!tagihan) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Tagihan tidak ditemukan" });
+      return res.status(404).json({
+        success: false,
+        message: "Tagihan tidak ditemukan",
+      });
     }
 
-    // Periksa apakah transaksi berhasil
+    const transactionStatus = notification.transaction_status;
+
+    // Periksa apakah transaksi berhasil (settlement)
     if (transactionStatus === "settlement") {
-    //  update status tagihan
+      // Update status tagihan
       await prisma.tagihan.update({
         where: { id: tagihanId },
-        data: { status_bayar: "lunas", metode_bayar: "otomatis" },
+        data: {
+          status_bayar: "lunas",
+          metode_bayar: "otomatis",
+        },
       });
+
+      // Simpan detail transaksi
       await prisma.transaksi.create({
         data: {
           userId: tagihan.userId,
@@ -145,17 +156,20 @@ const handleNotification = async (req, res) => {
             : null,
           order: {
             connect: { id: tagihan.id },
-          }
+          },
         },
       });
     }
 
-    res.status(200).json({ success: true, message: "Notifikasi diproses" });
+    return res.status(200).json({
+      success: true,
+      message: "Notifikasi diproses",
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
+    console.error("Terjadi error saat memproses notifikasi:", error);
+    return res.status(500).json({
       success: false,
-      message: "Terjadi kesalahan",
+      message: "Terjadi kesalahan saat memproses notifikasi",
       error: error.message,
     });
   }
