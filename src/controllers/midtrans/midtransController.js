@@ -14,8 +14,6 @@ const coreApi = new midtransClient.CoreApi({
   serverKey: process.env.MIDTRANS_SERVER_KEY,
 });
 
-
-
 const tokenizer = async (req, res) => {
   try {
     const { id } = req.body; // Ambil ID tagihan dari request
@@ -43,7 +41,7 @@ const tokenizer = async (req, res) => {
       item_details: [
         {
           id: tagihan.id.toString(),
-          name: `Pembayaran ${tagihan.user.username}`,
+          name: `Pembayaran IPL ${tagihan.user.username} BULAN ${tagihan.bulan} TAHUN ${tagihan.tahun}`,
           price: tagihan.nominal,
           quantity: 1,
         },
@@ -51,6 +49,7 @@ const tokenizer = async (req, res) => {
       customer_details: {
         first_name: tagihan.user.username,
         email: tagihan.user.email,
+        phone: tagihan.user.phone,
       },
     };
 
@@ -74,7 +73,14 @@ const checkTransaksi = async (req, res) => {
   try {
     const transactionStatus = await coreApi.transaction.status(orderId);
 
-    const { order_id,payment_type, gross_amount,transaction_time, issuer, acquirer } = transactionStatus;
+    const {
+      order_id,
+      payment_type,
+      gross_amount,
+      transaction_time,
+      issuer,
+      acquirer,
+    } = transactionStatus;
 
     res.status(200).json({
       order_id,
@@ -82,33 +88,36 @@ const checkTransaksi = async (req, res) => {
       gross_amount,
       transaction_time,
       issuer,
-      acquirer
+      acquirer,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// const checkTransaksi = async (req, res) => {
-//   const { orderId } = req.params;
-//   try {
-//     const transactionStatus = await coreApi.transaction.status(orderId);
-//     res.status(200).json(transactionStatus);
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
-// tes ubah status
+
+// ubah status
 const handleNotification = async (req, res) => {
   try {
     const notification = req.body;
 
     // Ambil order_id dari notifikasi
-    const orderId = notification.order_id; // Sesuai dengan `INV-{tagihan.id}`
+    const orderId = notification.order_id;
+    // rubah orderId menjadi format uuid
     const transactionStatus = notification.transaction_status;
 
-    // Ambil ID tagihan dari orderId (karena kita tambahkan prefix "INV-")
-    const tagihanId = orderId;
+    // Extract tagihanId dari order_id
+    const tagihanId = orderId.split("_").pop();
+
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+
+    if (!uuidRegex.test(tagihanId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Format UUID tidak valid" });
+    }
 
     // Ambil data tagihan dari database
     const tagihan = await prisma.tagihan.findUnique({
@@ -117,23 +126,26 @@ const handleNotification = async (req, res) => {
     });
 
     if (!tagihan) {
+      console.log("Tagihan tidak ditemukan untuk ID:", tagihanId);
       return res
         .status(404)
         .json({ success: false, message: "Tagihan tidak ditemukan" });
     }
 
-    // Simpan data notifikasi ke tabel transaksi
-
-    // Periksa apakah transaksi berhasil
+    // Cek status transaksi, jika "settlement", update status tagihan menjadi "Lunas"
     if (transactionStatus === "settlement") {
-    //  update status tagihan
-      await prisma.tagihan.update({
+
+      // Update status tagihan menjadi "Lunas"
+      const updatedTagihan = await prisma.tagihan.update({
         where: { id: tagihanId },
-        data: { status_bayar: "lunas", metode_bayar: "otomatis" },
-      });
-      await prisma.transaksi.create({
         data: {
-          userId: tagihan.userId,
+          status_bayar: "lunas", // Ubah status menjadi "Lunas"
+        },
+      });
+
+      const transaksi = await prisma.transaksi.create({
+        data: {
+          userId: tagihan.userId, 
           grossAmount: parseFloat(notification.gross_amount),
           currency: notification.currency,
           paymentType: notification.payment_type,
@@ -150,12 +162,13 @@ const handleNotification = async (req, res) => {
             : null,
           order: {
             connect: { id: tagihan.id }, // Hubungkan dengan Tagihan yang sudah ada
-          }
+          },
         },
       });
     }
 
-    res.status(200).json({ success: true, message: "Notifikasi diproses" });
+    // Mengirimkan respon sukses setelah update
+    res.status(200).json({ success: true, data: notification });
   } catch (error) {
     console.error(error);
     res.status(500).json({
