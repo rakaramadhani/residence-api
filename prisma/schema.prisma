@@ -9,39 +9,42 @@ datasource db {
 }
 
 model User {
-  id          String      @id @default(uuid()) @db.Uuid
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  email       String      @unique
+  id          String       @id @default(uuid()) @db.Uuid
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  email       String       @unique
   username    String?
   password    String
   phone       String?
-  role        Role        @default(penghuni)
+  role        Role         @default(penghuni)
   isVerified  Boolean?
   feedback    String?
-  cluster     Cluster?
+  cluster     String?
   nomor_rumah String?
   rt          String?
   rw          String?
-  anggota     Anggota[]
+  penghuni    Penghuni[]
   broadcast   Broadcast[]
   panic       Panic[]
   Pengaduan   Pengaduan[]
   surat       Surat[]
   tagihan     Tagihan[]
+  notifikasi  Notifikasi[]
 }
 
 model Tagihan {
-  id           String      @id @default(uuid()) @db.Uuid
-  userId       String      @db.Uuid
-  metode_bayar MetodeBayar @default(otomatis)
-  bulan        Int
-  tahun        Int
-  nominal      Int
-  createdAt    DateTime    @default(now())
-  status_bayar StatusBayar @default(belumLunas)
-  user         User        @relation(fields: [userId], references: [id])
-  transaksi    Transaksi[]
+  id             String      @id @default(uuid()) @db.Uuid
+  userId         String      @db.Uuid
+  metode_bayar   MetodeBayar @default(otomatis)
+  bulan          Int
+  tahun          Int
+  nominal        Int
+  createdAt      DateTime    @default(now())
+  status_bayar   StatusBayar @default(belumLunas)
+  user           User        @relation(fields: [userId], references: [id])
+  transaksi      Transaksi[]
+  lastReminderAt DateTime?
+  reminderCount  Int         @default(0)
 }
 
 model Transaksi {
@@ -72,41 +75,35 @@ model Broadcast {
   user             User            @relation(fields: [userId], references: [id])
 }
 
-model Anggota {
-  id                String           @id @default(uuid()) @db.Uuid
-  userId            String           @db.Uuid
-  nama              String
-  nik               Int
-  gender            Gender
-  tempat_lahir      String
-  tanggal_lahir     DateTime
-  agama             String
-  status_perkawinan StatusPerkawinan
-  pekerjaan         String
-  warga_negara      String
-  ktp               String
-  user              User             @relation(fields: [userId], references: [id])
-  surat             Surat[]
+model Penghuni {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  nama   String
+  nik    Int
+  gender String
+  user   User   @relation(fields: [userId], references: [id])
 }
 
 model Pengaduan {
-  id               String          @id @default(uuid()) @db.Uuid
-  userId           String          @db.Uuid
+  id               String             @id @default(uuid()) @db.Uuid
+  userId           String             @db.Uuid
   pengaduan        String
-  kategori         Kategori
-  status_pengaduan StatusPengaduan @default(PengajuanBaru)
+  kategori         Kategori_Pengaduan
+  status_pengaduan StatusPengaduan    @default(PengajuanBaru)
   feedback         String?
-  created_at       DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
-  user             User            @relation(fields: [userId], references: [id])
+  foto             String?
+  created_at       DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  user             User               @relation(fields: [userId], references: [id])
 }
 
 model Peraturan {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            Int                @id @default(autoincrement())
+  judul         String
+  isi_peraturan String
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  kategori      Kategori_Peraturan
 }
 
 model Panic {
@@ -117,27 +114,30 @@ model Panic {
   user       User     @relation(fields: [userId], references: [id])
 }
 
+model Notifikasi {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  judul     String
+  isi       String
+  tipe      String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
 model Surat {
   id        String      @id @default(uuid()) @db.Uuid
   userId    String      @db.Uuid
-  anggotaId String      @db.Uuid
   deskripsi String?
   createdAt DateTime    @default(now())
+  file      String?
   status    StatusSurat @default(requested)
   feedback  String?
-  anggota   Anggota     @relation(fields: [anggotaId], references: [id])
   user      User        @relation(fields: [userId], references: [id])
 }
 
 enum Role {
   penghuni
   admin
-}
-
-enum Cluster {
-  ChairaTownHouse
-  GrandCeleste
-  Calosa
 }
 
 enum StatusBayar {
@@ -161,12 +161,23 @@ enum StatusPerkawinan {
   Menikah
 }
 
-enum Gender {
-  Pria
-  Wanita
+enum Kategori_Pengaduan {
+  Keamanan
+  Infrastruktur
+  Kebersihan
+  Pelayanan
+  Lainnya
 }
 
-enum Kategori {
+enum Kategori_Peraturan {
+  Keamanan
+  Infrastruktur
+  Kebersihan
+  Pelayanan
+  Lainnya
+}
+
+enum Kategori_Broadcast {
   Keamanan
   Infrastruktur
   Kebersihan

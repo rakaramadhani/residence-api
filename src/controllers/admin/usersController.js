@@ -14,15 +14,16 @@ app.use(express.json());
 const userSchema = joi.object({
     email: joi.string().email().required(),
     password: joi.string().min(8).required(),
-    phone: joi
-        .string()   
-        .pattern(/^[0-9]+$/)
-        .min(10)
-        .max(15),
+    // phone: joi
+    //     .string()   
+    //     .pattern(/^[0-9]+$/)
+    //     .min(10)
+    //     .max(15),
     nomor_rumah: joi.string(),
     rt: joi.string(),
     rw: joi.string(),
-    cluster: joi.string().valid("ChairaTownHouse", "GrandCeleste", "Calosa"),
+    cluster: joi.string(),
+    
 });
 
 const users = async (req, res) => {
@@ -42,9 +43,9 @@ const users = async (req, res) => {
 
 // Membuat user
 const createUser = async (req, res) => {
-    const { email, password, phone, nomor_rumah, rt, rw, cluster } = req.body;
+    const { email, password, nomor_rumah, rt, rw, cluster } = req.body;
     // Validasi input
-    const { error } = userSchema.validate({ email, password, phone, nomor_rumah, rt, rw, cluster });
+    const { error } = userSchema.validate({ email, password, nomor_rumah, rt, rw, cluster });
     if (error) {
         return res.status(400).json({ message: error.details[0].message });
     }
@@ -62,7 +63,7 @@ const createUser = async (req, res) => {
     const user = await prisma.user.create({
         data: {
             email,
-            phone,
+            // phone,
             nomor_rumah,
             rt,
             rw,
