@@ -109,6 +109,8 @@ model Peraturan {
 model Panic {
   id         String   @id @default(uuid())
   userId     String   @db.Uuid
+  longitude  String
+  latitude   String
   created_at DateTime @default(now())
   updatedAt  DateTime @updatedAt
   user       User     @relation(fields: [userId], references: [id])
