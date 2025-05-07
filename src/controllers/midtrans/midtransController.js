@@ -128,7 +128,7 @@ const handleNotification = async (req, res) => {
     if (!tagihan) {
       console.log("Tagihan tidak ditemukan untuk ID:", tagihanId);
       return res
-        .status(404)
+        .status(200)
         .json({ success: false, message: "Tagihan tidak ditemukan" });
     }
 
