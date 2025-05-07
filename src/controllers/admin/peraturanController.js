@@ -7,9 +7,9 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
 
 const createPeraturan = async (req, res) => {
     try {
-        const { judul, isi_peraturan } = req.body;
+        const { judul, kategori, isi_peraturan } = req.body;
         const peraturan = await prisma.peraturan.create({
-                data: { judul, isi_peraturan },
+                data: { judul, kategori, isi_peraturan },
         });
         const response = await supabase.channel("all_changes").send({
             type: "broadcast",
@@ -36,12 +36,12 @@ const getPeraturan = async (req, res) => {
 const updatePeraturan = async (req, res) => {
     try {
         const { id } = req.params;
-        const { judul, isi_peraturan } = req.body;
+        const { judul, kategori, isi_peraturan } = req.body;
 
         // Konversi id ke Int
         const peraturan = await prisma.peraturan.update({
             where: { id: parseInt(id, 10) }, // Konversi id ke Int
-            data: { judul, isi_peraturan },
+            data: { judul, kategori, isi_peraturan },
         });
 
         const response = await supabase.channel("all_changes").send({

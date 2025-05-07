@@ -27,7 +27,7 @@ const getPengaduan = async (req, res) => {
 // Buat Pengaduan
 const createPengaduan = async (req, res) => {
     const { user_id } = req.params;
-    const { pengaduan, kategori } = req.body;
+    const { pengaduan, kategori, foto } = req.body;
     try {
         // Simpan data ke database
         const newPengaduan = await prisma.pengaduan.create({
@@ -35,6 +35,7 @@ const createPengaduan = async (req, res) => {
             userId : user_id,
             pengaduan,
             kategori,
+            foto,
         },
         });
 
@@ -55,12 +56,12 @@ const createPengaduan = async (req, res) => {
 
 const updatePengaduan = async (req, res) => {
     const { id , user_id } = req.params;
-    const { pengaduan , kategori } = req.body;
+    const { pengaduan , kategori, foto } = req.body;
 
     try {
         const updatedPengaduan= await prisma.pengaduan.update({
             where: { id: id ,userId: user_id },
-            data: { pengaduan, kategori },
+            data: { pengaduan, kategori, foto },
         });
 
         // Kirim event realtime ke Supabase

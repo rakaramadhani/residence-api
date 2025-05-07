@@ -71,7 +71,7 @@ const getAdminBroadcast = async (req, res) => {
 // Buat Broadcast
 const createBroadcast = async (req, res) => {
     const { user_id } = req.params;
-    const { broadcast, tanggal_acara} = req.body;
+    const { kategori, broadcast, tanggal_acara} = req.body;
     try {
         // Simpan data ke database
         const newBroadcast = await prisma.broadcast.create({
@@ -91,12 +91,12 @@ const createBroadcast = async (req, res) => {
 
 const updateBroadcast = async (req, res) => {
     const { id , user_id } = req.params;
-    const { broadcast, tanggal_acara } = req.body;
+    const { kategori, broadcast, tanggal_acara } = req.body;
 
     try {
         const updatedBroacast = await prisma.broadcast.update({
             where: { id: id , userId: user_id },
-            data: { broadcast, tanggal_acara },
+            data: { kategori, broadcast, tanggal_acara },
         });
 
         // Kirim event realtime ke Supabase
