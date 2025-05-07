@@ -2,9 +2,6 @@
 CREATE TYPE "Role" AS ENUM ('penghuni', 'admin');
 
 -- CreateEnum
-CREATE TYPE "TipeRumah" AS ENUM ('ChairaTownHouse', 'GrandCeleste', 'Calosa');
-
--- CreateEnum
 CREATE TYPE "StatusBayar" AS ENUM ('belumLunas', 'lunas');
 
 -- CreateEnum
@@ -17,13 +14,19 @@ CREATE TYPE "StatusBroadcast" AS ENUM ('uploaded', 'verifying', 'approved');
 CREATE TYPE "StatusPerkawinan" AS ENUM ('BelumMenikah', 'Menikah');
 
 -- CreateEnum
-CREATE TYPE "Gender" AS ENUM ('Pria', 'Wanita');
+CREATE TYPE "Kategori_Pengaduan" AS ENUM ('Keamanan', 'Infrastruktur', 'Kebersihan', 'Pelayanan', 'Lainnya');
 
 -- CreateEnum
-CREATE TYPE "Kategori" AS ENUM ('Keamanan', 'Infrastruktur', 'Kebersihan', 'Pelayanan', 'Lainnya');
+CREATE TYPE "Kategori_Peraturan" AS ENUM ('Keamanan', 'Infrastruktur', 'Kebersihan', 'Pelayanan', 'Lainnya');
+
+-- CreateEnum
+CREATE TYPE "Kategori_Broadcast" AS ENUM ('Keamanan', 'Infrastruktur', 'Kebersihan', 'Pelayanan', 'Lainnya');
 
 -- CreateEnum
 CREATE TYPE "StatusPengaduan" AS ENUM ('PengajuanBaru', 'Ditangani', 'Selesai');
+
+-- CreateEnum
+CREATE TYPE "StatusSurat" AS ENUM ('requested', 'approved', 'rejected');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -35,10 +38,12 @@ CREATE TABLE "User" (
     "password" TEXT NOT NULL,
     "phone" TEXT,
     "role" "Role" NOT NULL DEFAULT 'penghuni',
-    "blok_rumah" TEXT,
-    "tipe_rumah" "TipeRumah",
     "isVerified" BOOLEAN,
     "feedback" TEXT,
+    "cluster" TEXT,
+    "nomor_rumah" TEXT,
+    "rt" TEXT,
+    "rw" TEXT,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -53,6 +58,8 @@ CREATE TABLE "Tagihan" (
     "nominal" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "status_bayar" "StatusBayar" NOT NULL DEFAULT 'belumLunas',
+    "lastReminderAt" TIMESTAMP(3),
+    "reminderCount" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "Tagihan_pkey" PRIMARY KEY ("id")
 );
@@ -90,21 +97,14 @@ CREATE TABLE "Broadcast" (
 );
 
 -- CreateTable
-CREATE TABLE "Anggota" (
+CREATE TABLE "Penghuni" (
     "id" UUID NOT NULL,
     "userId" UUID NOT NULL,
     "nama" TEXT NOT NULL,
     "nik" INTEGER NOT NULL,
-    "gender" "Gender" NOT NULL,
-    "tempat_lahir" TEXT NOT NULL,
-    "tanggal_lahir" TIMESTAMP(3) NOT NULL,
-    "agama" TEXT NOT NULL,
-    "status_perkawinan" "StatusPerkawinan" NOT NULL,
-    "pekerjaan" TEXT NOT NULL,
-    "warga_negara" TEXT NOT NULL,
-    "ktp" TEXT NOT NULL,
+    "gender" TEXT NOT NULL,
 
-    CONSTRAINT "Anggota_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Penghuni_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -112,9 +112,10 @@ CREATE TABLE "Pengaduan" (
     "id" UUID NOT NULL,
     "userId" UUID NOT NULL,
     "pengaduan" TEXT NOT NULL,
-    "kategori" "Kategori" NOT NULL,
+    "kategori" "Kategori_Pengaduan" NOT NULL,
     "status_pengaduan" "StatusPengaduan" NOT NULL DEFAULT 'PengajuanBaru',
     "feedback" TEXT,
+    "foto" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -124,10 +125,11 @@ CREATE TABLE "Pengaduan" (
 -- CreateTable
 CREATE TABLE "Peraturan" (
     "id" SERIAL NOT NULL,
-    "title" TEXT NOT NULL,
-    "content" TEXT NOT NULL,
+    "judul" TEXT NOT NULL,
+    "isi_peraturan" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "kategori" "Kategori_Peraturan" NOT NULL,
 
     CONSTRAINT "Peraturan_pkey" PRIMARY KEY ("id")
 );
@@ -140,6 +142,31 @@ CREATE TABLE "Panic" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Panic_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Notifikasi" (
+    "id" UUID NOT NULL,
+    "userId" UUID NOT NULL,
+    "judul" TEXT NOT NULL,
+    "isi" TEXT NOT NULL,
+    "tipe" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Notifikasi_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Surat" (
+    "id" UUID NOT NULL,
+    "userId" UUID NOT NULL,
+    "deskripsi" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "file" TEXT,
+    "status" "StatusSurat" NOT NULL DEFAULT 'requested',
+    "feedback" TEXT,
+
+    CONSTRAINT "Surat_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -155,10 +182,16 @@ ALTER TABLE "Transaksi" ADD CONSTRAINT "Transaksi_orderId_fkey" FOREIGN KEY ("or
 ALTER TABLE "Broadcast" ADD CONSTRAINT "Broadcast_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Anggota" ADD CONSTRAINT "Anggota_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Penghuni" ADD CONSTRAINT "Penghuni_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Pengaduan" ADD CONSTRAINT "Pengaduan_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Panic" ADD CONSTRAINT "Panic_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Notifikasi" ADD CONSTRAINT "Notifikasi_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Surat" ADD CONSTRAINT "Surat_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

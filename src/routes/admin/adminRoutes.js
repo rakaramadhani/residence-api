@@ -4,8 +4,8 @@ const { users, createUser, detail, verifikasiUser } = require("../../controllers
 const { pengaduan, updatePengaduan } = require("../../controllers/admin/pengaduanController");
 const { broadcast, updateBroadcast,createBroadcast} = require("../../controllers/admin/broadcastController");
 const { getEmergency } = require("../../controllers/admin/emergencyController");
-const { createPeraturan, deletePeraturan, updatePeraturan } = require("../../controllers/admin/peraturanController");
-const { getTagihan, createTagihan, updateTagihan} = require("../../controllers/admin/tagihanController");
+const { createPeraturan, deletePeraturan, updatePeraturan, getPeraturan } = require("../../controllers/admin/peraturanController");
+const { getTagihan, getTagihanSummary, createTagihan, updateTagihan} = require("../../controllers/admin/tagihanController");
 const { getSurat, updateSurat } = require("../../controllers/admin/suratController");
 
 const router = express.Router();
@@ -21,7 +21,8 @@ router.get("/admin/pengaduan", authenticateAdmin, pengaduan);
 router.put("/admin/pengaduan/:id", authenticateAdmin, updatePengaduan);
 
 // Peraturan
-router.get("/admin/peraturan", authenticateAdmin, createPeraturan);
+router.post("/admin/peraturan", authenticateAdmin, createPeraturan);
+router.get("/admin/peraturan", authenticateAdmin, getPeraturan);
 router.put("/admin/peraturan/:id", authenticateAdmin, updatePeraturan);
 router.delete("/admin/peraturan/:id", authenticateAdmin, deletePeraturan);
 
@@ -36,6 +37,7 @@ router.get("/admin/emergency", authenticateAdmin, getEmergency);
 // tagihan
 router.get("/admin/tagihan",authenticateAdmin, getTagihan);
 router.put("/admin/tagihan/:id",authenticateAdmin, updateTagihan);
+router.get("/admin/tagihan/summary", authenticateAdmin, getTagihanSummary);
 router.post("/admin/tagihan/generate",authenticateAdmin, createTagihan);
 
 // surat

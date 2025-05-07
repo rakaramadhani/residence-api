@@ -7,9 +7,9 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
 
 const createPeraturan = async (req, res) => {
     try {
-        const { title, content } = req.body;
+        const { judul, isi_peraturan } = req.body;
         const peraturan = await prisma.peraturan.create({
-                data: { title, content },
+                data: { judul, isi_peraturan },
         });
         const response = await supabase.channel("all_changes").send({
             type: "broadcast",
@@ -36,29 +36,33 @@ const getPeraturan = async (req, res) => {
 const updatePeraturan = async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, content } = req.body;
+        const { judul, isi_peraturan } = req.body;
+
+        // Konversi id ke Int
         const peraturan = await prisma.peraturan.update({
-            where: { id: id },
-            data: { title, content },
+            where: { id: parseInt(id, 10) }, // Konversi id ke Int
+            data: { judul, isi_peraturan },
         });
+
         const response = await supabase.channel("all_changes").send({
             type: "broadcast",
             event: "peraturan_updated",
             payload: peraturan,
         });
-    }
-    catch (error) {
+
+        res.status(200).json({ success: true, data: peraturan });
+    } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
-}
+};
 
 const deletePeraturan = async (req, res) => {
     try {
         const { id } = req.params;
         const peraturan = await prisma.peraturan.delete({
-            where: { id: id },
+            where: { id: parseInt(id, 10) },
         });
-        res.status(200).json({ success: true, data: peraturan });
+        res.status(200).json({ success: true, message: "Peraturan deleted" });
         const response = await supabase.channel("all_changes").send({
             type: "broadcast",
             event: "peraturan_deleted",

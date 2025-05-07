@@ -16,8 +16,7 @@ const coreApi = new midtransClient.CoreApi({
 
 const tokenizer = async (req, res) => {
   try {
-    const { id } = req.body; // Ambil ID tagihan dari request
-    // Ambil data tagihan dari database berdasarkan ID
+    const { id } = req.body;
     const tagihan = await prisma.tagihan.findUnique({
       where: { id: id },
       include: {
@@ -25,7 +24,6 @@ const tokenizer = async (req, res) => {
       },
     });
 
-    // Jika tidak ditemukan
     if (!tagihan) {
       return res
         .status(404)
@@ -35,7 +33,7 @@ const tokenizer = async (req, res) => {
     // Parameter untuk Midtrans
     let parameter = {
       transaction_details: {
-        order_id: tagihan.id, // Bisa tambahkan prefix jika perlu
+        order_id: tagihan.id,
         gross_amount: tagihan.nominal,
       },
       item_details: [
@@ -170,10 +168,10 @@ const handleNotification = async (req, res) => {
     // Mengirimkan respon sukses setelah update
     res.status(200).json({ success: true, data: notification });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
+    console.error("Terjadi error saat memproses notifikasi:", error);
+    return res.status(500).json({
       success: false,
-      message: "Terjadi kesalahan",
+      message: "Terjadi kesalahan saat memproses notifikasi",
       error: error.message,
     });
   }

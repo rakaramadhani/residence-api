@@ -1,195 +1,198 @@
-datasource db {
-    provider  = "postgresql"
-    url       = env("DATABASE_URL")
-    directUrl = env("DIRECT_URL")
-}
-
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
-// User Data
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
 model User {
-    id         String      @id @default(uuid()) @db.Uuid
-    createdAt  DateTime    @default(now())
-    updatedAt  DateTime    @updatedAt
-    email      String      @unique
-    username   String?
-    password   String
-    phone      String?
-    role       Role        @default(penghuni)
-    nomor_rumah String?
-    rt        String?
-    rw        String?
-    cluster Cluster?
-    isVerified Boolean?
-    feedback   String?
-    tagihan    Tagihan[]
-    broadcast  Broadcast[]
-    anggota    Anggota[]
-    Pengaduan  Pengaduan[]
-    panic      Panic[]
-    surat      Surat[]
+  id          String       @id @default(uuid()) @db.Uuid
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  email       String       @unique
+  username    String?
+  password    String
+  phone       String?
+  role        Role         @default(penghuni)
+  isVerified  Boolean?
+  feedback    String?
+  cluster     String?
+  nomor_rumah String?
+  rt          String?
+  rw          String?
+  penghuni    Penghuni[]
+  broadcast   Broadcast[]
+  panic       Panic[]
+  Pengaduan   Pengaduan[]
+  surat       Surat[]
+  tagihan     Tagihan[]
+  notifikasi  Notifikasi[]
 }
 
-enum Role {
-    penghuni
-    admin
-}
-
-enum Cluster {
-    ChairaTownHouse
-    GrandCeleste
-    Calosa
-}
-
-// Data Iuran
 model Tagihan {
-    id           String      @id @default(uuid()) @db.Uuid
-    user         User        @relation(fields: [userId], references: [id])
-    userId       String      @db.Uuid
-    metode_bayar MetodeBayar @default(otomatis)
-    bulan        Int
-    tahun        Int
-    nominal      Int
-    transaksi    Transaksi[]
-    createdAt    DateTime    @default(now())
-    status_bayar StatusBayar @default(belumLunas)
-}
-
-enum StatusBayar {
-    belumLunas
-    lunas
+  id             String      @id @default(uuid()) @db.Uuid
+  userId         String      @db.Uuid
+  metode_bayar   MetodeBayar @default(otomatis)
+  bulan          Int
+  tahun          Int
+  nominal        Int
+  createdAt      DateTime    @default(now())
+  status_bayar   StatusBayar @default(belumLunas)
+  user           User        @relation(fields: [userId], references: [id])
+  transaksi      Transaksi[]
+  lastReminderAt DateTime?
+  reminderCount  Int         @default(0)
 }
 
 model Transaksi {
-    id                String    @id @default(uuid()) // ID unik transaksi
-    order             Tagihan   @relation(fields: [orderId], references: [id])
-    orderId           String    @db.Uuid
-    userId            String
-    grossAmount       Decimal // Jumlah transaksi (gross_amount)
-    currency          String // Mata uang (currency)
-    paymentType       String // Jenis pembayaran (payment_type)
-    transactionStatus String // Status transaksi (transaction_status)
-    fraudStatus       String // Status fraud (fraud_status)
-    vaBank            String? // Nama bank (dari va_numbers)
-    vaNumber          String? // Nomor VA (dari va_numbers)
-    transactionTime   DateTime? // Waktu transaksi (transaction_time)
-    settlementTime    DateTime? // Waktu settlement (settlement_time)
-    expiryTime        DateTime? // Waktu kedaluwarsa pembayaran (expiry_time)
+  id                String    @id @default(uuid())
+  orderId           String    @db.Uuid
+  userId            String
+  grossAmount       Decimal
+  currency          String
+  paymentType       String
+  transactionStatus String
+  fraudStatus       String
+  vaBank            String?
+  vaNumber          String?
+  transactionTime   DateTime?
+  settlementTime    DateTime?
+  expiryTime        DateTime?
+  order             Tagihan   @relation(fields: [orderId], references: [id])
+}
+
+model Broadcast {
+  id               String          @id @default(uuid()) @db.Uuid
+  userId           String          @db.Uuid
+  broadcast        String
+  tanggal_acara    DateTime
+  status_broadcast StatusBroadcast @default(uploaded)
+  feedback         String?
+  createdAt        DateTime        @default(now())
+  user             User            @relation(fields: [userId], references: [id])
+}
+
+model Penghuni {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  nama   String
+  nik    Int
+  gender String
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+model Pengaduan {
+  id               String             @id @default(uuid()) @db.Uuid
+  userId           String             @db.Uuid
+  pengaduan        String
+  kategori         Kategori_Pengaduan
+  status_pengaduan StatusPengaduan    @default(PengajuanBaru)
+  feedback         String?
+  foto             String?
+  created_at       DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  user             User               @relation(fields: [userId], references: [id])
+}
+
+model Peraturan {
+  id            Int                @id @default(autoincrement())
+  judul         String
+  isi_peraturan String
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  kategori      Kategori_Peraturan
+}
+
+model Panic {
+  id         String   @id @default(uuid())
+  userId     String   @db.Uuid
+  created_at DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id])
+}
+
+model Notifikasi {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  judul     String
+  isi       String
+  tipe      String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Surat {
+  id        String      @id @default(uuid()) @db.Uuid
+  userId    String      @db.Uuid
+  deskripsi String?
+  createdAt DateTime    @default(now())
+  file      String?
+  status    StatusSurat @default(requested)
+  feedback  String?
+  user      User        @relation(fields: [userId], references: [id])
+}
+
+enum Role {
+  penghuni
+  admin
+}
+
+enum StatusBayar {
+  belumLunas
+  lunas
 }
 
 enum MetodeBayar {
-    manual
-    otomatis
-}
-
-// BroadCast Data
-model Broadcast {
-    id               String          @id @default(uuid()) @db.Uuid
-    user             User            @relation(fields: [userId], references: [id])
-    userId           String          @db.Uuid
-    broadcast        String
-    tanggal_acara    DateTime
-    status_broadcast StatusBroadcast @default(uploaded)
-    feedback         String?
-    createdAt        DateTime        @default(now())
+  manual
+  otomatis
 }
 
 enum StatusBroadcast {
-    uploaded
-    verifying
-    approved
-}
-
-// Data Anggota Keluarga
-model Anggota {
-    id                String           @id @default(uuid()) @db.Uuid
-    user              User             @relation(fields: [userId], references: [id])
-    userId            String           @db.Uuid
-    nama              String
-    nik               Int
-    gender            Gender
-    tempat_lahir      String
-    tanggal_lahir     DateTime
-    agama             String
-    status_perkawinan StatusPerkawinan
-    pekerjaan         String
-    warga_negara      String
-    ktp               String
-    surat             Surat[]
+  uploaded
+  verifying
+  approved
 }
 
 enum StatusPerkawinan {
-    BelumMenikah
-    Menikah
+  BelumMenikah
+  Menikah
 }
 
-enum Gender {
-    Pria
-    Wanita
+enum Kategori_Pengaduan {
+  Keamanan
+  Infrastruktur
+  Kebersihan
+  Pelayanan
+  Lainnya
 }
 
-// Pengaduan
-model Pengaduan {
-    id               String          @id @default(uuid()) @db.Uuid
-    user             User            @relation(fields: [userId], references: [id])
-    userId           String          @db.Uuid
-    pengaduan        String
-    kategori         Kategori
-    status_pengaduan StatusPengaduan @default(PengajuanBaru)
-    feedback         String?
-    created_at       DateTime        @default(now())
-    updatedAt        DateTime        @updatedAt
+enum Kategori_Peraturan {
+  Keamanan
+  Infrastruktur
+  Kebersihan
+  Pelayanan
+  Lainnya
 }
 
-enum Kategori {
-    Keamanan
-    Infrastruktur
-    Kebersihan
-    Pelayanan
-    Lainnya
+enum Kategori_Broadcast {
+  Keamanan
+  Infrastruktur
+  Kebersihan
+  Pelayanan
+  Lainnya
 }
 
 enum StatusPengaduan {
-    PengajuanBaru
-    Ditangani
-    Selesai
+  PengajuanBaru
+  Ditangani
+  Selesai
 }
 
-// Peraturan
-model Peraturan {
-    id        Int      @id @default(autoincrement())
-    title     String
-    content   String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-}
-
-// Panic
-model Panic {
-    id         String   @id @default(uuid())
-    user       User     @relation(fields: [userId], references: [id])
-    userId     String   @db.Uuid
-    created_at DateTime @default(now())
-    updatedAt  DateTime @updatedAt
-}
-
-// surat
-model Surat {
-    id        String   @id @default(uuid()) @db.Uuid
-    user      User     @relation(fields: [userId], references: [id])
-    userId    String   @db.Uuid
-    anggota   Anggota  @relation(fields: [anggotaId], references: [id])
-    anggotaId String   @db.Uuid
-    deskripsi     String?
-    status StatusSurat @default(requested)
-    feedback String?
-    createdAt DateTime @default(now())
-}
 enum StatusSurat {
-    requested
-    approved
-    rejected
+  requested
+  approved
+  rejected
 }
-
