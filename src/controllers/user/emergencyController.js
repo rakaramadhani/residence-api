@@ -10,18 +10,23 @@ const supabase = createClient(
 );
 const prisma = new PrismaClient();
 
-const emergency = async (req, res) => {
+const createEmergency = async (req, res) => {
   try {
     const { user_id } = req.params;
+    const { latitude, longitude } = req.body;
 
     if (!user_id) {
       return res.status(400).json({ message: "User ID is required" });
     }
+
     const newEmergency = await prisma.panic.create({
       data: {
         userId: user_id,
+        latitude,
+        longitude,
       },
     });
+
     const response = await supabase.channel("all_changes").send({
       type: "broadcast",
       event: "new_emergency",
@@ -39,4 +44,14 @@ const emergency = async (req, res) => {
   }
 };
 
-module.exports = { emergency };
+const getEmergency = async (req, res) => {
+    try {
+        const allEmergency = await prisma.panic.findMany({});
+        res.status(200).json({ message: "Success", data: allEmergency });
+    } catch (error) {
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+};
+
+
+module.exports = { createEmergency, getEmergency };

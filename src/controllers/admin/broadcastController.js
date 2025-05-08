@@ -10,11 +10,11 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
 // Buat Broadcast
 const createBroadcast = async (req, res) => {
     const { user_id } = req.params;
-    const { broadcast, tanggal_acara} = req.body;
+    const { kategori, broadcast, tanggal_acara} = req.body;
     try {
         // Simpan data ke database
         const newBroadcast = await prisma.broadcast.create({
-        data :{ userId: user_id, broadcast, tanggal_acara, status_broadcast: "approved" }
+        data :{ userId: user_id, kategori, broadcast, tanggal_acara, status_broadcast: "approved" }
         });
 
         const response = await supabase.channel("all_changes").send({
