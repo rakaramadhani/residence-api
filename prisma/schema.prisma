@@ -65,15 +65,16 @@ model Transaksi {
 }
 
 model Broadcast {
-  id               String          @id @default(uuid()) @db.Uuid
-  userId           String          @db.Uuid
+  id               String             @id @default(uuid()) @db.Uuid
+  userId           String             @db.Uuid
   kategori         Kategori_Broadcast
   broadcast        String
-  tanggal_acara    DateTime
-  status_broadcast StatusBroadcast @default(uploaded)
+  tanggal_acara    DateTime?
+  foto             String?
+  status_broadcast StatusBroadcast    @default(uploaded)
   feedback         String?
-  createdAt        DateTime        @default(now())
-  user             User            @relation(fields: [userId], references: [id])
+  createdAt        DateTime           @default(now())
+  user             User               @relation(fields: [userId], references: [id])
 }
 
 model Penghuni {
@@ -185,6 +186,9 @@ enum Kategori_Broadcast {
   Infrastruktur
   Kebersihan
   Pelayanan
+  Kehilangan
+  Kegiatan
+  Promosi
   Lainnya
 }
 
