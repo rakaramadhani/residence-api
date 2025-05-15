@@ -3,7 +3,7 @@ const prisma = new PrismaClient();
 
 const getTagihan = async (req, res) => {
     try {
-        const allUsers = await prisma.tagihan.findMany({});
+        const allUsers = await prisma.tagihan.findMany({include: {user: true}});
         res.status(200).json({ message: "Success", data: allUsers });
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
@@ -37,7 +37,7 @@ const getTagihanSummary = async (req, res) => {
       const jumlahLunas = tagihanBulanIni.filter((t) => t.status_bayar === "lunas").length;
       const jumlahBelumLunas = tagihanBulanIni.filter((t) => t.status_bayar === "belumLunas").length;
   
-      res.json({
+      res.status(200).json({
         totalLunas,
         jumlahLunas,
         jumlahBelumLunas,

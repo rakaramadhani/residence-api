@@ -8,29 +8,29 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model User {
-  id          String       @id @default(uuid()) @db.Uuid
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  email       String       @unique
-  username    String?
-  password    String
-  phone       String?
-  role        Role         @default(penghuni)
-  isVerified  Boolean?
-  feedback    String?
-  cluster     String?
-  nomor_rumah String?
-  rt          String?
-  rw          String?
-  penghuni    Penghuni[]
-  broadcast   Broadcast[]
-  panic       Panic[]
-  Pengaduan   Pengaduan[]
-  surat       Surat[]
-  tagihan     Tagihan[]
-  notifikasi  Notifikasi[]
-}
+  model User {
+    id          String       @id @default(uuid()) @db.Uuid
+    createdAt   DateTime     @default(now())
+    updatedAt   DateTime     @updatedAt
+    email       String       @unique
+    username    String?
+    password    String
+    phone       String?
+    role        Role         @default(penghuni)
+    isVerified  Boolean?
+    feedback    String?
+    cluster     String?
+    nomor_rumah String?
+    rt          String?
+    rw          String?
+    penghuni    Penghuni[]
+    broadcast   Broadcast[]
+    panic       Panic[]
+    Pengaduan   Pengaduan[]
+    surat       Surat[]
+    tagihan     Tagihan[]
+    notifikasi  Notifikasi[]
+  }
 
 model Tagihan {
   id             String      @id @default(uuid()) @db.Uuid
