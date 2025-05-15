@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Penghuni" ALTER COLUMN "nik" SET DATA TYPE TEXT;
