@@ -103,7 +103,7 @@ const getAdminBroadcast = async (req, res) => {
                 userId: user_id,
                 broadcast,
                 kategori,
-                tanggal_acara,
+                tanggal_acara: tanggal_acara || null,
                 foto: fotoUrl, // Simpan foto URL jika ada
             },
         });
@@ -159,7 +159,7 @@ const updateBroadcast = async (req, res) => {
             data: {
                 kategori,
                 broadcast,
-                tanggal_acara,
+                tanggal_acara: tanggal_acara || null,
                 foto: fotoUrl ? fotoUrl : undefined,  // Hanya update foto jika ada foto baru
             },
         });
@@ -185,9 +185,40 @@ const updateBroadcast = async (req, res) => {
 const deleteBroadcast = async (req, res) => {
     try {
         const { user_id, id } = req.params;
-        const deleted = await prisma.broadcast.delete({
-            where: { userId: user_id, id: id }
+
+        // 1. Ambil data broadcast dulu (untuk ambil URL foto)
+        const existing = await prisma.broadcast.findUnique({
+            where: { id: id },
         });
+
+        if (!existing || existing.userId !== user_id) {
+            return res.status(404).json({ message: "Broadcast tidak ditemukan" });
+        }
+
+        // 2. Ambil path file dari public URL
+        let filePath = null;
+        if (existing.foto) {
+            const url = new URL(existing.foto);
+            filePath = url.pathname.replace("/storage/v1/object/public/uploads/", "");
+        }
+
+        // 3. Hapus data dari database
+        const deleted = await prisma.broadcast.delete({
+            where: { id: id },
+        });
+
+        // 4. Hapus file dari Supabase Storage
+        if (filePath) {
+            const { error: deleteError } = await supabase.storage
+                .from("uploads")
+                .remove([filePath]);
+
+            if (deleteError) {
+                console.warn("Gagal hapus foto broadcast dari Supabase Storage:", deleteError.message);
+            }
+        }
+
+        // 5. Broadcast realtime
         const response = await supabase.channel("all_changes").send({
             type: "broadcast",
             event: "deleted",
@@ -196,9 +227,11 @@ const deleteBroadcast = async (req, res) => {
 
         console.log("Supabase Event Sent:", response);
         res.status(200).json({ message: "Success" });
+
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
+
 
 module.exports = {getAllBroadcast,getBroadcast,getAdminBroadcast,createBroadcast,updateBroadcast,deleteBroadcast};

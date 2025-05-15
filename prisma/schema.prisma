@@ -81,7 +81,7 @@ model Penghuni {
   id     String @id @default(uuid()) @db.Uuid
   userId String @db.Uuid
   nama   String
-  nik    Int
+  nik    String
   gender String
   user   User   @relation(fields: [userId], references: [id])
 }
@@ -160,6 +160,7 @@ enum StatusBroadcast {
   uploaded
   verifying
   approved
+  rejected
 }
 
 enum StatusPerkawinan {

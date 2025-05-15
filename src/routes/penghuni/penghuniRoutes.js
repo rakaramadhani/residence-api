@@ -45,7 +45,7 @@ router.delete("/user/:user_id/pengaduan/:id",authenticatePenghuni,checkVerified,
 
 // Broadcast
 router.get("/user/broadcast", authenticatePenghuni,checkVerified, getAllBroadcast);
-router.get("/user/broadcast/admin", authenticatePenghuni,checkVerified, getAdminBroadcast);
+router.get("/user/broadcast/admin", authenticatePenghuni, getAdminBroadcast);
 router.get("/user/:user_id/broadcast", authenticatePenghuni,checkVerified, getBroadcast);
 router.post("/user/:user_id/broadcast",authenticatePenghuni, upload.single("foto"), checkVerified, createBroadcast);
 router.put("/user/:user_id/broadcast/:id",authenticatePenghuni, upload.single("foto"), checkVerified, updateBroadcast);
@@ -54,7 +54,7 @@ router.delete("/user/:user_id/broadcast/:id",authenticatePenghuni,checkVerified,
 // emergency
 router.post("/user/:user_id/emergency",authenticatePenghuni,checkVerified, createEmergency);
 router.get("/user/emergency", authenticatePenghuni,checkVerified, getEmergency);
-
+ 
 // midtrans 
 router.post("/user/payment/tokenizer",authenticatePenghuni,checkVerified, tokenizer);
 router.get("/user/payment/check-status/:orderId",authenticatePenghuni,checkVerified, checkTransaksi);

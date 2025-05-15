@@ -68,6 +68,8 @@ const userDetails = async (req, res) => {
         email: true,
         phone:true,
         nomor_rumah: true,
+        role: true,
+        isVerified: true,
         rt: true,
         rw: true,
         cluster: true
@@ -110,7 +112,7 @@ const updateDataUser = async (req, res) => {
 const checkUsername = async (req, res) => {
   const { username } = req.body;
   try {
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.user.findFirst({
       where: { username: username },
     });
     if (existingUser) {

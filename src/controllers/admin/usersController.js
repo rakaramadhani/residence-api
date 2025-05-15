@@ -3,6 +3,7 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const app = express();
 const joi = require("joi");
+const nodemailer = require("nodemailer");
 const {createClient} = require('@supabase/supabase-js')
 const dotenv = require("dotenv");
 dotenv.config();
@@ -24,6 +25,14 @@ const userSchema = joi.object({
     rw: joi.string(),
     cluster: joi.string(),
     
+});
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
 });
 
 const users = async (req, res) => {
@@ -63,7 +72,7 @@ const createUser = async (req, res) => {
     const user = await prisma.user.create({
         data: {
             email,
-            // phone,
+            phone,
             nomor_rumah,
             rt,
             rw,
@@ -71,6 +80,17 @@ const createUser = async (req, res) => {
             password: hashedPassword,
         },
     });
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: user.email,
+      subject: "AKUN PENGHUNI BARU",
+      text: `Selamat datang di sistem kami, ${user.email}. Akun Anda telah berhasil dibuat. Silakan gunakan email dan password 
+      email : ${user.email} dan password : ${password} untuk masuk ke sistem kami. .`,
+    };
+
+    // Kirim email
+    await transporter.sendMail(mailOptions);
+
     const response = await supabase.channel("all_changes").send({
         type: "broadcast",
         event: "user",

@@ -138,9 +138,40 @@ const updatePengaduan = async (req, res) => {
 const deletePengaduan = async (req, res) => {
     try {
         const { user_id, id } = req.params;
-        const deleted = await prisma.pengaduan.delete({
-            where: {  userId: user_id, id: id, }
+
+        // 1. Ambil data pengaduan (untuk ambil path foto)
+        const existing = await prisma.pengaduan.findUnique({
+            where: { id: id },
         });
+
+        if (!existing || existing.userId !== user_id) {
+            return res.status(404).json({ message: "Pengaduan tidak ditemukan" });
+        }
+
+        // 2. Parse path file dari URL Supabase
+        let filePath = null;
+        if (existing.foto) {
+            const url = new URL(existing.foto);
+            filePath = url.pathname.replace("/storage/v1/object/public/uploads/", ""); // hapus bagian awal
+        }
+
+        // 3. Hapus dari database
+        const deleted = await prisma.pengaduan.delete({
+            where: { id: id },
+        });
+
+        // 4. Hapus file dari storage
+        if (filePath) {
+            const { error: deleteError } = await supabase.storage
+                .from("uploads")
+                .remove([filePath]);
+
+            if (deleteError) {
+                console.warn("Gagal hapus file dari Supabase Storage:", deleteError.message);
+            }
+        }
+
+        // 5. Kirim event
         const response = await supabase.channel("all_changes").send({
             type: "broadcast",
             event: "deleted",
@@ -149,9 +180,11 @@ const deletePengaduan = async (req, res) => {
 
         console.log("Supabase Event Sent:", response);
         res.status(200).json({ message: "Success" });
+
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
+
 
 module.exports = {getPengaduan, createPengaduan, updatePengaduan, deletePengaduan};
