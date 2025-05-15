@@ -16,4 +16,27 @@ const getEmergency = async (req, res) => {
     }
 };
 
-module.exports = {getEmergency};
+// Get Emergency Alert
+const getEmergencyAlert = async (req, res) => {
+    try {
+        const emergencyAlert = await prisma.panic.findFirst({
+            orderBy: {
+                created_at: 'desc'
+            },
+            include: {
+                user: true  
+            }
+        });
+        res.status(200).json({ 
+            message: "Success", 
+            data: emergencyAlert 
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            message: "Internal Server Error", 
+            error: error.message 
+        });
+    }
+};
+
+module.exports = {getEmergency, getEmergencyAlert};

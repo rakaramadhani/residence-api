@@ -1,13 +1,10 @@
 const dotenv = require("dotenv");
-dotenv.config(); // Load dotenv di awal
 const { createClient } = require("@supabase/supabase-js");
 const { PrismaClient } = require("@prisma/client");
-
-
-
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 const prisma = new PrismaClient();
 
+dotenv.config(); // Load dotenv di awal
 
 // Get Pengaduan tiap User
 const getPengaduan = async (req, res) => {
