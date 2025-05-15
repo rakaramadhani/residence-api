@@ -1,6 +1,7 @@
 const express = require("express");
 const { authenticatePenghuni } = require("../../middleware/authPenghuni");
 const { checkVerified } = require("../../middleware/verified");
+const upload = require("../../middleware/multer");
 const router = express.Router();
 const {tokenizer, checkTransaksi, handleNotification} = require("../../controllers/midtrans/midtransController");
 const { getSurat, createSurat } = require("../../controllers/user/suratController");
@@ -38,16 +39,16 @@ router.delete("/user/:user_id/penghuni/:id",authenticatePenghuni, checkVerified,
 
 // Pengaduan
 router.get("/user/:user_id/pengaduan", authenticatePenghuni,checkVerified, getPengaduan);
-router.post("/user/:user_id/pengaduan", authenticatePenghuni,checkVerified, createPengaduan);
-router.put("/user/:user_id/pengaduan/:id", authenticatePenghuni,checkVerified, updatePengaduan);
+router.post("/user/:user_id/pengaduan", upload.single("foto"), authenticatePenghuni,checkVerified, createPengaduan);
+router.put("/user/:user_id/pengaduan/:id",upload.single("foto"), authenticatePenghuni,checkVerified, updatePengaduan);
 router.delete("/user/:user_id/pengaduan/:id",authenticatePenghuni,checkVerified, deletePengaduan);
 
 // Broadcast
 router.get("/user/broadcast", authenticatePenghuni,checkVerified, getAllBroadcast);
 router.get("/user/broadcast/admin", authenticatePenghuni,checkVerified, getAdminBroadcast);
 router.get("/user/:user_id/broadcast", authenticatePenghuni,checkVerified, getBroadcast);
-router.post("/user/:user_id/broadcast",authenticatePenghuni,checkVerified, createBroadcast);
-router.put("/user/:user_id/broadcast/:id",authenticatePenghuni,checkVerified, updateBroadcast);
+router.post("/user/:user_id/broadcast",authenticatePenghuni, upload.single("foto"), checkVerified, createBroadcast);
+router.put("/user/:user_id/broadcast/:id",authenticatePenghuni, upload.single("foto"), checkVerified, updateBroadcast);
 router.delete("/user/:user_id/broadcast/:id",authenticatePenghuni,checkVerified, deleteBroadcast);
 
 // emergency
