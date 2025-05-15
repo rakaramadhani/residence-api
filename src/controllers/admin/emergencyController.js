@@ -9,7 +9,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
 // Get Emergency
 const getEmergency = async (req, res) => {
     try {
-        const allEmergency = await prisma.panic.findMany({});
+        const allEmergency = await prisma.emergency.findMany({});
         res.status(200).json({ message: "Success", data: allEmergency });
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
@@ -19,7 +19,7 @@ const getEmergency = async (req, res) => {
 // Get Emergency Alert
 const getEmergencyAlert = async (req, res) => {
     try {
-        const emergencyAlert = await prisma.panic.findFirst({
+        const emergencyAlert = await prisma.emergency.findFirst({
             orderBy: {
                 created_at: 'desc'
             },

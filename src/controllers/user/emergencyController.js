@@ -19,7 +19,7 @@ const createEmergency = async (req, res) => {
       return res.status(400).json({ message: "User ID is required" });
     }
 
-    const newEmergency = await prisma.panic.create({
+    const newEmergency = await prisma.emergency.create({
       data: {
         userId: user_id,
         latitude,
@@ -46,7 +46,7 @@ const createEmergency = async (req, res) => {
 
 const getEmergency = async (req, res) => {
     try {
-        const allEmergency = await prisma.panic.findMany({});
+        const allEmergency = await prisma.emergency.findMany({});
         res.status(200).json({ message: "Success", data: allEmergency });
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
