@@ -51,6 +51,19 @@ const updatePengaduan = async (req, res) => {
     }
 };
 
+// Get Pengaduan by ID
+const getPengaduanById = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const pengaduan = await prisma.pengaduan.findUnique({
+            where: { id: id },
+            include: { user: true }
+        });
+        res.status(200).json({ message: "Success", data: pengaduan });
+    } catch (error) {
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+};
 
 
-module.exports = {pengaduan, updatePengaduan}
+module.exports = {pengaduan, updatePengaduan, getPengaduanById}

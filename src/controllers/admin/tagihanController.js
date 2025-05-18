@@ -1,3 +1,4 @@
+const cron = require('node-cron');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -65,45 +66,195 @@ const updateTagihan = async (req, res) => {
 };
 
 
-const createTagihan = async (req, res) => {
-    try {
-        // Ambil parameter pengecualian dari body request (opsional)
-        const { userIds } = req.body; // Array of user IDs (jika hanya untuk user tertentu)
+// Fungsi untuk membuat tagihan bulanan
+const generateTagihanBulanan = async () => {
+  try {
+    console.log('Menjalankan generate tagihan otomatis...');
+    
+    // Ambil semua user dengan role "penghuni"
+    const users = await prisma.user.findMany({
+      where: {
+        role: "penghuni"
+      },
+      include: {
+        clusterRef: true
+      }
+    });
 
-        // Ambil semua user yang memiliki role "penghuni"
-        let users = await prisma.user.findMany({
-            where: {
-                role: "penghuni",
-                ...(userIds && { id: { in: userIds } }) // Filter jika hanya user tertentu
-            }
+    // Cek apakah ada user yang memenuhi syarat
+    if (users.length === 0) {
+      console.log('Tidak ada pengguna yang memenuhi syarat untuk generate tagihan');
+      return;
+    }
+
+    const bulan = new Date().getMonth() + 1;
+    const tahun = new Date().getFullYear();
+    const tagihanList = [];
+
+    for (const user of users) {
+      // Cek apakah sudah ada tagihan untuk user ini di bulan dan tahun yang sama
+      const existingTagihan = await prisma.tagihan.findFirst({
+        where: {
+          userId: user.id,
+          bulan,
+          tahun
+        }
+      });
+
+      // Jika belum ada tagihan, buat tagihan baru
+      if (!existingTagihan) {
+        // Tentukan nominal berdasarkan cluster
+        let nominal = 150000; // Default jika tidak ada cluster
+        if (user.clusterRef) {
+          nominal = user.clusterRef.nominal_tagihan;
+        }
+        
+        const tagihan = await prisma.tagihan.create({
+          data: {
+            userId: user.id,
+            metode_bayar: "otomatis",
+            bulan,
+            tahun,
+            nominal,
+            status_bayar: "belumLunas"
+          },
+        });
+        tagihanList.push(tagihan);
+      }
+    }
+
+    console.log(`Berhasil generate ${tagihanList.length} tagihan untuk bulan ${bulan}/${tahun}`);
+  } catch (error) {
+    console.error('Error saat generate tagihan otomatis:', error);
+  }
+};
+  
+  // Jadwalkan cron job untuk berjalan setiap tanggal 1 bulan pada jam 00:01
+  // Format cron: minute hour day-of-month month day-of-week
+  const schedulerTagihan = cron.schedule('1 0 1 * *', generateTagihanBulanan, {
+    timezone: "Asia/Jakarta" // Sesuaikan dengan timezone Indonesia
+  });
+  
+  // Fungsi untuk memulai scheduler
+  const startScheduler = () => {
+    schedulerTagihan.start();
+    console.log('Scheduler tagihan otomatis telah dimulai');
+    
+    // Jalankan langsung untuk pengujian (opsional, hapus di production)
+    // generateTagihanBulanan();
+  };
+
+// Fungsi untuk generate tagihan manual berdasarkan user yang dipilih
+const generateTagihanManual = async (req, res) => {
+  try {
+    const { userIds, bulan, tahun, useClusterNominal = true } = req.body;
+    let { nominal } = req.body;
+    
+    // Validasi input
+    if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+      return res.status(400).json({ message: "Daftar user ID harus diisi" });
+    }
+    
+    if (!bulan || !tahun) {
+      return res.status(400).json({ message: "Bulan dan tahun wajib diisi" });
+    }
+    
+    // Jika useClusterNominal false, harus ada nominal
+    if (!useClusterNominal && !nominal) {
+      return res.status(400).json({ message: "Nominal wajib diisi jika tidak menggunakan nominal cluster" });
+    }
+
+    const bulanInt = parseInt(bulan, 10);
+    const tahunInt = parseInt(tahun, 10);
+    
+    if (nominal) {
+      nominal = parseInt(nominal, 10);
+    }
+    
+    // Validasi bulan dan tahun
+    if (bulanInt < 1 || bulanInt > 12) {
+      return res.status(400).json({ message: "Bulan harus antara 1-12" });
+    }
+    
+    if (tahunInt < 2000 || tahunInt > 2100) {
+      return res.status(400).json({ message: "Tahun tidak valid" });
+    }
+
+    const tagihanList = [];
+    const errorList = [];
+
+    // Proses setiap user ID
+    for (const userId of userIds) {
+      try {
+        // Cek apakah user ada
+        const user = await prisma.user.findUnique({
+          where: { id: userId },
+          include: {
+            clusterRef: true
+          }
         });
 
-        // Cek apakah ada user yang memenuhi syarat
-        if (users.length === 0) {
-            return res.status(404).json({ success: false, message: "Tidak ada pengguna yang memenuhi syarat" });
+        if (!user) {
+          errorList.push({ userId, error: "User tidak ditemukan" });
+          continue;
         }
 
-        const bulan = new Date().getMonth() + 1;
-        const tahun = new Date().getFullYear();
-        const tagihanList = [];
+        // Cek apakah sudah ada tagihan untuk user ini di bulan dan tahun yang sama
+        const existingTagihan = await prisma.tagihan.findFirst({
+          where: {
+            userId,
+            bulan: bulanInt,
+            tahun: tahunInt
+          }
+        });
 
-        for (const user of users) {
-            const tagihan = await prisma.tagihan.create({
-                data: {
-                    userId: user.id,
-                    metode_bayar: "otomatis",
-                    bulan,
-                    tahun,
-                    nominal: 50000,
-                },
-            });
-            tagihanList.push(tagihan);
+        // Jika sudah ada tagihan, catat sebagai error
+        if (existingTagihan) {
+          errorList.push({ 
+            userId, 
+            error: "Tagihan untuk bulan dan tahun ini sudah ada" 
+          });
+          continue;
         }
 
-        res.status(201).json({ success: true, data: tagihanList });
-    } catch (error) {
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
+        // Tentukan nominal
+        let tagihanNominal;
+        if (useClusterNominal && user.clusterRef) {
+          tagihanNominal = user.clusterRef.nominal_tagihan;
+        } else {
+          tagihanNominal = nominal || 50000; // Default jika tidak ada nominal yang ditentukan
+        }
+
+        // Buat tagihan baru
+        const tagihan = await prisma.tagihan.create({
+          data: {
+            userId,
+            metode_bayar: "manual",
+            bulan: bulanInt,
+            tahun: tahunInt,
+            nominal: tagihanNominal,
+            status_bayar: "belumLunas"
+          },
+        });
+        
+        tagihanList.push(tagihan);
+      } catch (error) {
+        errorList.push({ userId, error: error.message });
+      }
     }
+
+    res.status(200).json({ 
+      message: "Proses generate tagihan manual selesai", 
+      berhasil: tagihanList.length,
+      gagal: errorList.length,
+      data: {
+        berhasil: tagihanList,
+        gagal: errorList
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
+  }
 };
 
-module.exports = { getTagihan, createTagihan, updateTagihan, getTagihanSummary };
+module.exports = { getTagihan, generateTagihanBulanan, updateTagihan, getTagihanSummary, startScheduler, generateTagihanManual };

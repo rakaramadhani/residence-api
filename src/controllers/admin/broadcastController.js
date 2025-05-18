@@ -9,7 +9,6 @@ const supabase = createClient(
   process.env.SUPABASE_ANON_KEY
 );
 
-// create broadcast
 // Buat Broadcast
 const createBroadcast = async (req, res) => {
   const { user_id } = req.params;

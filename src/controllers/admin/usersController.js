@@ -24,86 +24,180 @@ const userSchema = joi.object({
     rt: joi.string(),
     rw: joi.string(),
     cluster: joi.string(),
-    
+    clusterId: joi.number().integer(),
 });
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
+const userCreateSchema = joi.object({
+    email: joi.string().email().required().messages({
+        'string.email': 'Format email tidak valid',
+        'any.required': 'Email wajib diisi'
+    }),
+    password: joi.string().min(8).required().messages({
+        'string.min': 'Password minimal 8 karakter',
+        'any.required': 'Password wajib diisi'
+    }),
+    nomor_rumah: joi.string().required().messages({
+        'any.required': 'Nomor rumah wajib diisi'
+    }),
+    rt: joi.string().required().messages({
+        'any.required': 'RT wajib diisi'
+    }),
+    rw: joi.string().required().messages({
+        'any.required': 'RW wajib diisi' 
+    }),
+    clusterId: joi.number().integer().required().messages({
+        'any.required': 'Cluster wajib dipilih'
+    })
 });
+
+// const transporter = nodemailer.createTransport({
+//   service: "gmail",
+//   auth: {
+//     user: process.env.EMAIL_USER,
+//     pass: process.env.EMAIL_PASS,
+//   },
+// });
 
 const users = async (req, res) => {
     try {
         const allUsers = await prisma.user.findMany({
-        where: {
-            role: "penghuni",
-        },
-    });
-    res.status(200).json({ data: allUsers });
+            where: {
+                role: "penghuni",
+            },
+            include: {
+                clusterRef: {
+                    select: {
+                        id: true,
+                        nama_cluster: true,
+                        nominal_tagihan: true
+                    }
+                }
+            }
+        });
+        res.status(200).json({ data: allUsers });
     } catch (error) {
-        res
-            .status(500)
-            .json({ message: "Internal Server Error", error: error.message });
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
 
 // Membuat user
 const createUser = async (req, res) => {
-    const { email, password, nomor_rumah, rt, rw, cluster } = req.body;
-    // Validasi input
-    const { error } = userSchema.validate({ email, password, nomor_rumah, rt, rw, cluster });
+    const { 
+        email, 
+        password,         nomor_rumah, 
+        rt, 
+        rw, 
+        clusterId 
+    } = req.body;
+    
+    // Validasi input dengan skema baru
+    const { error } = userCreateSchema.validate({ 
+        email, 
+        password, 
+        nomor_rumah, 
+        rt, 
+        rw, 
+        clusterId 
+    });
+    
     if (error) {
-        return res.status(400).json({ message: error.details[0].message });
+        return res.status(400).json({ 
+            success: false,
+            message: error.details[0].message 
+        });
     }
+    
     try {
         // Cek apakah email sudah ada
         const existingUser = await prisma.user.findUnique({
-        where: { email },
+            where: { email },
         });
+        
         if (existingUser) {
-            return res.status(400).json({ message: "Email already exists" });
+            return res.status(400).json({ 
+                success: false,
+                message: "Email sudah digunakan" 
+            });
         }
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-    // Simpan user baru
-    const user = await prisma.user.create({
-        data: {
+        
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        // Persiapkan data user
+        const userData = {
             email,
-            phone,
+            password: hashedPassword,
             nomor_rumah,
             rt,
             rw,
-            cluster,
-            password: hashedPassword,
-        },
-    });
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: user.email,
-      subject: "AKUN PENGHUNI BARU",
-      text: `Selamat datang di sistem kami, ${user.email}. Akun Anda telah berhasil dibuat. Silakan gunakan email dan password 
-      email : ${user.email} dan password : ${password} untuk masuk ke sistem kami. .`,
-    };
+            role: "penghuni", // Default role
+            isVerified: false // Default belum terverifikasi
+        };
+        
+        // Tambahkan clusterId jika ada
+        if (clusterId) {
+            userData.clusterId = parseInt(clusterId, 10);
+            
+            // Dapatkan nama cluster untuk disimpan di field cluster
+            const clusterData = await prisma.cluster.findUnique({
+                where: { id: parseInt(clusterId, 10) },
+                select: { nama_cluster: true }
+            });
+            
+            if (clusterData) {
+                userData.cluster = clusterData.nama_cluster;
+            }
+        }
+        
+        // Simpan user baru
+        const user = await prisma.user.create({
+            data: userData,
+            include: {
+                clusterRef: true
+            }
+        });
+        
+        // Kirim email notifikasi
+//         const mailOptions = {
+//             from: process.env.EMAIL_USER,
+//             to: user.email,
+//             subject: "AKUN PENGHUNI BARU",
+//             text: `Selamat datang di sistem kami, ${user.email}. 
+            
+// Akun Anda telah berhasil dibuat dengan detail berikut:
+// - Email: ${user.email} 
+// - Password: ${password}
 
-    // Kirim email
-    await transporter.sendMail(mailOptions);
+// Silakan gunakan kredensial di atas untuk masuk ke sistem kami.`,
+//         };
 
-    const response = await supabase.channel("all_changes").send({
-        type: "broadcast",
-        event: "user",
-        payload: user,
-    });
-    res.status(201).json({ message: "User created successfully", data: user });
+//         // Kirim email
+//         await transporter.sendMail(mailOptions);
+
+        // Notifikasi melalui Supabase
+        const response = await supabase.channel("all_changes").send({
+            type: "broadcast",
+            event: "user",
+            payload: user,
+        });
+        
+        res.status(201).json({ 
+            success: true,
+            message: "User berhasil dibuat", 
+            data: user 
+        });
     } catch (error) {
         if (error.code === "P2002") {
-            return res.status(400).json({ message: "Email already in use" });
+            return res.status(400).json({ 
+                success: false,
+                message: "Email sudah digunakan" 
+            });
         }
-    res
-        .status(500)
-        .json({ message: "Internal Server Error", error: error.message });
+        res.status(500).json({ 
+            success: false,
+            message: "Terjadi kesalahan pada server", 
+            error: error.message 
+        });
     }
 };
 
@@ -112,7 +206,10 @@ const detail = async (req, res) => {
     try {
         const {user_id} = req.params;
         const user = await prisma.user.findUnique({
-            where: { id: user_id }
+            where: { id: user_id },
+            include: {
+                clusterRef: true
+            }
         });
         if (!user) {
             return res.status(404).json({ message: "User not found" });
@@ -131,12 +228,113 @@ const verifikasiUser = async (req, res) => {
     try {
         const verifikasi = await prisma.user.update({
             where: { id: user_id },
-                data: { isVerified, feedback },
-            });
+            data: { isVerified, feedback },
+        });
         res.status(200).json({ message: "success", data: verifikasi});
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
 
-module.exports = { users, createUser, verifikasiUser, detail}
+// Update user data
+const updateUser = async (req, res) => {
+    const { user_id } = req.params;
+    const { 
+        email, 
+        nomor_rumah, 
+        rt, 
+        rw, 
+        cluster, 
+        clusterId, 
+        phone, 
+        password 
+    } = req.body;
+    
+    try {
+        // Cek apakah user ada
+        const user = await prisma.user.findUnique({
+            where: { id: user_id },
+        });
+        
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        
+        // Persiapkan data untuk update
+        const updateData = {};
+        
+        if (email) updateData.email = email;
+        if (nomor_rumah) updateData.nomor_rumah = nomor_rumah;
+        if (rt) updateData.rt = rt;
+        if (rw) updateData.rw = rw;
+        if (cluster) updateData.cluster = cluster;
+        if (phone) updateData.phone = phone;
+        
+        // Jika password diubah, hash password baru
+        if (password) {
+            updateData.password = await bcrypt.hash(password, 10);
+        }
+        
+        // Update clusterId jika ada
+        if (clusterId !== undefined) {
+            if (clusterId === null) {
+                updateData.clusterId = null;
+            } else {
+                updateData.clusterId = parseInt(clusterId, 10);
+            }
+        }
+        
+        // Update user
+        const updatedUser = await prisma.user.update({
+            where: { id: user_id },
+            data: updateData,
+            include: {
+                clusterRef: true
+            }
+        });
+        
+        res.status(200).json({ 
+            message: "User berhasil diperbarui", 
+            data: updatedUser 
+        });
+    } catch (error) {
+        if (error.code === "P2002") {
+            return res.status(400).json({ message: "Email already in use" });
+        }
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+};
+
+// Fungsi untuk mendapatkan daftar cluster (tambahkan)
+const getClustersForDropdown = async (req, res) => {
+    try {
+        const clusters = await prisma.cluster.findMany({
+            select: {
+                id: true,
+                nama_cluster: true
+            },
+            orderBy: {
+                nama_cluster: 'asc'
+            }
+        });
+        
+        res.status(200).json({ 
+            message: "Success", 
+            data: clusters 
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            message: "Gagal mengambil data cluster", 
+            error: error.message 
+        });
+    }
+};
+
+module.exports = { 
+    users, 
+    createUser, 
+    verifikasiUser, 
+    detail, 
+    updateUser,
+    getClustersForDropdown
+};

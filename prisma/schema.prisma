@@ -30,6 +30,8 @@ datasource db {
     surat       Surat[]
     tagihan     Tagihan[]
     notifikasi  Notifikasi[]
+    clusterId   Int?
+    clusterRef  Cluster?    @relation(fields: [clusterId], references: [id])
   }
 
 model Tagihan {
@@ -106,6 +108,15 @@ model Peraturan {
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
   kategori      Kategori_Peraturan
+}
+
+model Cluster {
+  id              Int      @id @default(autoincrement())
+  nama_cluster    String   @unique
+  nominal_tagihan Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  users           User[]
 }
 
 model Emergency {
