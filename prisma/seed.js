@@ -8,45 +8,90 @@ async function seeder() {
 }
 
 async function seedUsers() {
-    const adminCheck = await prisma.user.findUnique({
-        where: { email: "admin@gmail.com"},
+    // Cek jika akun admin sudah ada
+    const admin1Check = await prisma.user.findUnique({
+        where: { email: "rakaramadhani2001@gmail.com"},
     });
-    const userCheck = await prisma.user.findUnique({
-        where: { email: "user@gmail.com"},
+    
+    const admin2Check = await prisma.user.findUnique({
+        where: { email: "perumahanxyz@gmail.com"},
     });
 
+    // Cek jika akun penghuni sudah ada
+    const user1Check = await prisma.user.findUnique({
+        where: { email: "dickyfauzieseptiana@gmail.com"},
+    });
     
-    if (!adminCheck && !userCheck) {
-        // Hash password
-        const adminHashedPassword = await bcrypt.hash("admin123", 10);
-        const penghunihashedPassword = await bcrypt.hash("user123", 10);
-        // Buat akun admin
+    const user2Check = await prisma.user.findUnique({
+        where: { email: "ahmadauli37@gmail.com"},
+    });
+
+    // Hash password
+    const adminHashedPassword = await bcrypt.hash("admin1234", 10);
+    const penghuniHashedPassword = await bcrypt.hash("user1234", 10);
+    
+    // Buat akun Admin 1 jika belum ada
+    if (!admin1Check) {
         await prisma.user.create({
             data: {
                 username: "Admin Raka",
-                email: "admin@gmail.com",
+                email: "rakaramadhani2001@gmail.com",
                 password: adminHashedPassword,
                 role: "admin",
+                isActive: true,
             },
         });
-
+        console.log("✅ Admin 1 berhasil dibuat!");
+    } else {
+        console.log("⚠️ Admin 1 sudah ada, tidak perlu membuat lagi.");
+    }
+    
+    // Buat akun Admin 2 jika belum ada
+    if (!admin2Check) {
         await prisma.user.create({
             data: {
-                username: "userRaka",
-                email: "user@gmail.com",
-                password: penghunihashedPassword,
-                role: "penghuni",
+                username: "Admin Perumahan",
+                email: "perumahanxyz@gmail.com",
+                password: adminHashedPassword,
+                role: "admin",
+                isActive: true,
             },
         });
-
-        console.log("✅ Admin dan User berhasil dibuat!");
+        console.log("✅ Admin 2 berhasil dibuat!");
     } else {
-        if (adminCheck) {
-            console.log("⚠️ Admin sudah ada, tidak perlu membuat lagi.");
-        }
-        if (userCheck) {
-            console.log("⚠️ User sudah ada, tidak perlu membuat lagi.");
-        }
+        console.log("⚠️ Admin 2 sudah ada, tidak perlu membuat lagi.");
+    }
+    
+    // Buat akun Penghuni 1 jika belum ada
+    if (!user1Check) {
+        await prisma.user.create({
+            data: {
+                username: "Dicky Fauzie",
+                email: "dickyfauzieseptiana@gmail.com",
+                password: penghuniHashedPassword,
+                role: "penghuni",
+                isActive: true,
+            },
+        });
+        console.log("✅ Penghuni 1 berhasil dibuat!");
+    } else {
+        console.log("⚠️ Penghuni 1 sudah ada, tidak perlu membuat lagi.");
+    }
+    
+    // Buat akun Penghuni 2 jika belum ada
+    if (!user2Check) {
+        await prisma.user.create({
+            data: {
+                username: "Ahmad Auli",
+                email: "ahmadauli37@gmail.com",
+                password: penghuniHashedPassword,
+                role: "penghuni",
+                isActive: true,
+            },
+        });
+        console.log("✅ Penghuni 2 berhasil dibuat!");
+    } else {
+        console.log("⚠️ Penghuni 2 sudah ada, tidak perlu membuat lagi.");
     }
 }
 
