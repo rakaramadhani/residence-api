@@ -11,7 +11,7 @@ const getPengaduan = async (req, res) => {
     try {
         const { user_id } = req.params;
         const data = await prisma.pengaduan.findMany({
-            where: { userId: user_id }
+            where: { userId: user_id }, orderBy: { created_at: "desc" },
         });
         if (!data.length) {
             return res.status(200).json({ message: "No data found" });

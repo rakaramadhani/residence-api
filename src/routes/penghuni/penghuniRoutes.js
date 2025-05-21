@@ -8,6 +8,7 @@ const { getSurat, createSurat } = require("../../controllers/user/suratControlle
 const { getTagihan, getRiwayatTagihan } = require("../../controllers/user/tagihanController");
 const { getPeraturan } = require("../../controllers/user/peraturanController");
 const { createEmergency, getEmergency } = require("../../controllers/user/emergencyController");
+const { createFCM } = require(".././../notification/fcm");
 const {
   getFamilyData,
   createFamilyData,
@@ -70,5 +71,8 @@ router.get("/user/peraturan", authenticatePenghuni,checkVerified,getPeraturan);
 // surat
 router.get("/user/:user_id/surat", authenticatePenghuni,checkVerified, getSurat);
 router.post("/user/:user_id/surat", authenticatePenghuni, checkVerified,createSurat);
+
+// notif
+router.post("/user/fcm", authenticatePenghuni, checkVerified, createFCM);
 
 module.exports = router;
