@@ -51,8 +51,9 @@ const createFCM = async (req, res) => {
       data: newFCM,
     });
   } catch (error) {
-    console.error("Error creating FCM token:", error);
+    console.error("Error creating FCM token :", error);
     res.status(500).json({ message: error.message });
+    
   }
 };
 
