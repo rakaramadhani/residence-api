@@ -30,6 +30,11 @@ const adminLogin = async (req, res) => {
             return res.status(403).json({ message: "Access denied: Only admin can login" });
         }
 
+        // Cek apakah user aktif
+        if (!user.isActive) {
+            return res.status(403).json({ message: "Access denied: Your account has been deactivated" });
+        }
+
         // Jika password belum di-set
         if (!user.password) {
             return res.status(400).json({ message: 'Password not set' });
@@ -68,7 +73,12 @@ const adminLogin = async (req, res) => {
 
 const userDetails = async (req, res) => {
     try {
-        const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+        const user = await prisma.user.findFirst({ 
+            where: { 
+                id: req.user.id,
+                isActive: true // Hanya ambil user aktif
+            } 
+        });
         if (!user) {
         return res.status(404).json({ message: "User not found" });
         }

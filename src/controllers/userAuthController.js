@@ -34,6 +34,13 @@ const login = async (req, res) => {
         .json({ message: "Access denied: Only penghuni can login" });
     }
 
+    // Cek apakah user aktif
+    if (!user.isActive) {
+      return res
+        .status(403)
+        .json({ message: "Access denied: Your account has been deactivated" });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid email or password" });
@@ -60,8 +67,11 @@ const login = async (req, res) => {
 // detail user
 const userDetails = async (req, res) => {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.user.id },
+    const user = await prisma.user.findFirst({
+      where: { 
+        id: req.user.id,
+        isActive: true // Hanya ambil user aktif
+      },
       select: {
         id: true,
         username: true,

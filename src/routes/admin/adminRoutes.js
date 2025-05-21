@@ -1,6 +1,6 @@
 const express = require("express");
 const { authenticateAdmin } = require("../../middleware/authAdmin");
-const { users, createUser, detail, verifikasiUser, updateUser, getClustersForDropdown } = require("../../controllers/admin/usersController");
+const { users, createUser, detail, verifikasiUser, updateUser, getClustersForDropdown, deleteUser } = require("../../controllers/admin/usersController");
 const { pengaduan, updatePengaduan, getPengaduanById } = require("../../controllers/admin/pengaduanController");
 const { broadcast, updateBroadcast,createBroadcast} = require("../../controllers/admin/broadcastController");
 const { getEmergency } = require("../../controllers/admin/emergencyController");
@@ -18,6 +18,7 @@ router.post("/admin/create-user", authenticateAdmin, createUser);
 router.get("/admin/user/:user_id",authenticateAdmin, detail);
 router.put("/admin/user/:user_id",authenticateAdmin, verifikasiUser);
 router.put("/admin/user/:user_id/update",authenticateAdmin, updateUser);
+router.delete('/admin/users/:user_id',authenticateAdmin, deleteUser);
 // Tambahkan route baru untuk dropdown cluster
 router.get("/admin/options/clusters", authenticateAdmin, getClustersForDropdown);
 
@@ -59,5 +60,7 @@ router.post("/admin/tagihan/generate",authenticateAdmin, generateTagihanManual);
 // surat
 router.get("/admin/surat", authenticateAdmin, getSurat);
 router.put("/admin/surat/:id", authenticateAdmin, updateSurat);
+
+
 
 module.exports = router;

@@ -2,6 +2,10 @@ generator client {
   provider = "prisma-client-js"
 }
 
+generator erd {
+  provider = "prisma-erd-generator"
+}
+
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
@@ -23,6 +27,8 @@ datasource db {
     nomor_rumah String?
     rt          String?
     rw          String?
+    isActive    Boolean      @default(true)
+    deletedAt   DateTime?
     penghuni    Penghuni[]
     broadcast   Broadcast[]
     emergency       Emergency[]
@@ -32,7 +38,17 @@ datasource db {
     notifikasi  Notifikasi[]
     clusterId   Int?
     clusterRef  Cluster?    @relation(fields: [clusterId], references: [id])
+    fcmtoken    Fcmtoken[]
   }
+
+model Fcmtoken{
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+}
 
 model Tagihan {
   id             String      @id @default(uuid()) @db.Uuid

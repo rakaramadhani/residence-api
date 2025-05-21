@@ -63,6 +63,7 @@ const users = async (req, res) => {
         const allUsers = await prisma.user.findMany({
             where: {
                 role: "penghuni",
+                isActive: true // Hanya ambil user aktif
             },
             include: {
                 clusterRef: {
@@ -205,8 +206,11 @@ const createUser = async (req, res) => {
 const detail = async (req, res) => {
     try {
         const {user_id} = req.params;
-        const user = await prisma.user.findUnique({
-            where: { id: user_id },
+        const user = await prisma.user.findFirst({
+            where: { 
+                id: user_id,
+                isActive: true // Hanya ambil user aktif
+            },
             include: {
                 clusterRef: true
             }
@@ -330,11 +334,140 @@ const getClustersForDropdown = async (req, res) => {
     }
 };
 
+// Delete user
+const deleteUser = async (req, res) => {
+    const { user_id } = req.params;
+    
+    try {
+        // Cek apakah user ada
+        const user = await prisma.user.findUnique({
+            where: { id: user_id },
+        });
+        
+        if (!user) {
+            return res.status(404).json({ 
+                success: false,
+                message: "User tidak ditemukan" 
+            });
+        }
+
+        // Soft delete dengan mengatur isActive menjadi false dan mengisi deletedAt
+        const deletedUser = await prisma.user.update({
+            where: { id: user_id },
+            data: { 
+                isActive: false,
+                deletedAt: new Date(),
+                feedback: user.feedback 
+                    ? `DELETED_USER - ${new Date().toISOString()} - ${user.feedback}`
+                    : `DELETED_USER - ${new Date().toISOString()}`
+            }
+        });
+
+        res.status(200).json({ 
+            success: true,
+            message: "User berhasil dihapus (soft delete)" 
+        });
+    } catch (error) {
+        console.error("Error soft deleting user:", error);
+        res.status(500).json({ 
+            success: false,
+            message: "Gagal menghapus user", 
+            error: error.message 
+        });
+    }
+};
+
+// Restorasi user yang telah di-soft delete
+const restoreUser = async (req, res) => {
+    const { user_id } = req.params;
+    
+    try {
+        // Cek apakah user ada
+        const user = await prisma.user.findUnique({
+            where: { id: user_id },
+        });
+        
+        if (!user) {
+            return res.status(404).json({ 
+                success: false,
+                message: "User tidak ditemukan" 
+            });
+        }
+        
+        if (user.isActive) {
+            return res.status(400).json({
+                success: false,
+                message: "User sudah aktif"
+            });
+        }
+
+        // Memulihkan user
+        const restoredUser = await prisma.user.update({
+            where: { id: user_id },
+            data: { 
+                isActive: true,
+                deletedAt: null
+            }
+        });
+
+        res.status(200).json({ 
+            success: true,
+            message: "User berhasil dipulihkan",
+            data: restoredUser
+        });
+    } catch (error) {
+        console.error("Error restoring user:", error);
+        res.status(500).json({ 
+            success: false,
+            message: "Gagal memulihkan user", 
+            error: error.message 
+        });
+    }
+};
+
+// Mendapatkan daftar user yang telah di-soft delete
+const deletedUsers = async (req, res) => {
+    try {
+        const users = await prisma.user.findMany({
+            where: {
+                role: "penghuni",
+                isActive: false,
+                deletedAt: {
+                    not: null
+                }
+            },
+            include: {
+                clusterRef: {
+                    select: {
+                        id: true,
+                        nama_cluster: true,
+                        nominal_tagihan: true
+                    }
+                }
+            }
+        });
+        res.status(200).json({ 
+            success: true,
+            message: "Daftar user terhapus",
+            data: users 
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false,
+            message: "Internal Server Error", 
+            error: error.message 
+        });
+    }
+};
+
 module.exports = { 
     users, 
     createUser, 
     verifikasiUser, 
     detail, 
     updateUser,
-    getClustersForDropdown
+    getClustersForDropdown,
+    deleteUser,
+    restoreUser,
+    deletedUsers
 };
