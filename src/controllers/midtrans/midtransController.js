@@ -14,23 +14,43 @@ const coreApi = new midtransClient.CoreApi({
   serverKey: process.env.MIDTRANS_SERVER_KEY,
 });
 
+
 const tokenizer = async (req, res) => {
   try {
     const { id } = req.body;
+
     const tagihan = await prisma.tagihan.findUnique({
       where: { id: id },
-      include: {
-        user: true,
-      },
+      include: { user: true },
     });
 
     if (!tagihan) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Tagihan tidak ditemukan" });
+      return res.status(404).json({
+        success: false,
+        message: "Tagihan tidak ditemukan",
+      });
     }
 
-    // Parameter untuk Midtrans
+    // Cek apakah sudah ada token dan belum expire
+    if (tagihan.snap_token) {
+      // Panggil Midtrans untuk cek status order_id
+      try {
+        const status = await snap.transaction.status(tagihan.id);
+
+        if (status.transaction_status === "pending") {
+          return res.status(200).json({
+            success: true,
+            snap_token: tagihan.snap_token,
+            reused: true, // hanya info tambahan
+          });
+        }
+      } catch (err) {
+        console.log("Gagal ambil status dari Midtrans:", err.message);
+        // Lanjut buat baru
+      }
+    }
+
+    // Jika belum ada atau transaksi sebelumnya tidak pending, buat token baru
     let parameter = {
       transaction_details: {
         order_id: tagihan.id,
@@ -51,10 +71,14 @@ const tokenizer = async (req, res) => {
       },
     };
 
-    // Buat token Midtrans
     const transactionToken = await snap.createTransactionToken(parameter);
 
-    // Kirim token ke frontend
+    // Simpan snap_token ke database
+    await prisma.tagihan.update({
+      where: { id: tagihan.id },
+      data: { snap_token: transactionToken },
+    });
+
     res.status(200).json({ success: true, snap_token: transactionToken });
   } catch (error) {
     console.error(error);
@@ -65,6 +89,7 @@ const tokenizer = async (req, res) => {
     });
   }
 };
+
 // cek transaksi
 const checkTransaksi = async (req, res) => {
   const { orderId } = req.params;

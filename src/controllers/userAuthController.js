@@ -66,13 +66,13 @@ const userDetails = async (req, res) => {
         id: true,
         username: true,
         email: true,
-        phone:true,
+        phone: true,
         nomor_rumah: true,
         role: true,
         isVerified: true,
         rt: true,
         rw: true,
-        cluster: true
+        cluster: true,
       },
     });
     if (!user) {
@@ -90,12 +90,21 @@ const userDetails = async (req, res) => {
 const updateDataUser = async (req, res) => {
   const { user_id } = req.params;
   const { password, phone, username } = req.body;
+
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const dataToUpdate = { phone, username };
+
+    // Hash password jika diberikan
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      dataToUpdate.password = hashedPassword;
+    }
+
     const userDetailData = await prisma.user.update({
       where: { id: user_id },
-      data: {  password: hashedPassword, phone, username },
+      data: dataToUpdate,
     });
+
     const response = await supabase.channel("all_changes").send({
       type: "broadcast",
       event: "new_user_detail",
@@ -108,6 +117,7 @@ const updateDataUser = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
 // cek username
 const checkUsername = async (req, res) => {
   const { username } = req.body;
@@ -119,8 +129,7 @@ const checkUsername = async (req, res) => {
       return res.status(400).json({ message: "Username already exists" });
     }
     return res.status(200).json({ message: "Username is available" });
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server error" });
   }
@@ -217,5 +226,5 @@ module.exports = {
   resetPassword,
   changePassword,
   updateDataUser,
-  checkUsername
+  checkUsername,
 };

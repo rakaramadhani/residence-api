@@ -12,7 +12,7 @@ const prisma = new PrismaClient();
 const getAllBroadcast = async (req, res) => {
     try{
         const allBroadcast = await prisma.broadcast.findMany({
-            where: {status_broadcast:"approved"}, include: { user: { select: { username: true, email: true } } },
+            where: {status_broadcast:"approved"}, include: { user: { select: { username: true, email: true } } }, orderBy: { createdAt: "desc" },
         });
         res.status(200).json({message:"success", data: allBroadcast});
     }catch(error){
@@ -25,7 +25,7 @@ const getBroadcast = async (req, res) => {
     try {
         const { user_id } = req.params;
         const data = await prisma.broadcast.findMany({
-            where: { userId: user_id }
+            where: { userId: user_id }, orderBy: { createdAt: "desc" },
         });
         if (!data.length) {
             return res.status(404).json({ message: "No data found" });

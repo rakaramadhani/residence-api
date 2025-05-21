@@ -5,10 +5,10 @@ const getTagihan = async (req, res) => {
     try {
         const { user_id } = req.params;
         const data = await prisma.tagihan.findMany({
-            where: { userId: user_id }
+            where: { userId: user_id , status_bayar: "belumLunas" }, orderBy: { createdAt: 'desc' }
         });
         if (!data.length) {
-            return res.status(200).json({ message: "No data found" });
+            return res.status(200).json({ message: "Belum ada tagihan" });
         }
         res.status(200).json({ message: "Success", data });
     } catch (error) {
@@ -22,8 +22,22 @@ const getRiwayatTagihan = async (req, res) => {
         const data = await prisma.tagihan.findMany({
             where: {
                 userId: user_id,
-                status: "Lunas"
-            }
+                status_bayar: "lunas"
+            },
+            include: {
+                transaksi: {
+                    select: {
+                        id: true,
+                        grossAmount: true,
+                        currency: true,
+                        paymentType: true,
+                        settlementTime: true,
+                        transactionStatus: true,
+                    },
+                },
+            }, orderBy: {
+                createdAt: 'desc',
+            },
         });
 
         if (!data.length) {
