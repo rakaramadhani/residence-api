@@ -4,7 +4,7 @@ const { checkVerified } = require("../../middleware/verified");
 const upload = require("../../middleware/multer");
 const router = express.Router();
 const {tokenizer, checkTransaksi, handleNotification} = require("../../controllers/midtrans/midtransController");
-const { getSurat, createSurat } = require("../../controllers/user/suratController");
+const { getSurat, createSurat, deleteSurat, downloadSurat, getUrlSurat } = require("../../controllers/user/suratController");
 const { getTagihan, getRiwayatTagihan } = require("../../controllers/user/tagihanController");
 const { getPeraturan } = require("../../controllers/user/peraturanController");
 const { createEmergency, getEmergency } = require("../../controllers/user/emergencyController");
@@ -70,7 +70,10 @@ router.get("/user/peraturan", authenticatePenghuni,checkVerified,getPeraturan);
 
 // surat
 router.get("/user/:user_id/surat", authenticatePenghuni,checkVerified, getSurat);
-router.post("/user/:user_id/surat", authenticatePenghuni, checkVerified,createSurat);
+router.post("/user/:user_id/surat", authenticatePenghuni, checkVerified, createSurat);
+router.delete("/user/:user_id/surat/:id", authenticatePenghuni, checkVerified, deleteSurat);
+router.get("/user/surat/:id/download", authenticatePenghuni, checkVerified, downloadSurat);
+router.get("/user/surat/:id/url", authenticatePenghuni, checkVerified, getUrlSurat);
 
 // notif
 router.post("/user/fcm", authenticatePenghuni, checkVerified, createFCM);

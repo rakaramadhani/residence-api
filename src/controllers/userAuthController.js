@@ -35,7 +35,7 @@ const login = async (req, res) => {
     }
 
     // Cek apakah user aktif
-    if (!user.isActive) {
+    if (user.isActive === false) {
       return res
         .status(403)
         .json({ message: "Access denied: Your account has been deactivated" });

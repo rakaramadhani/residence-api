@@ -160,14 +160,18 @@ model Notifikasi {
 }
 
 model Surat {
-  id        String      @id @default(uuid()) @db.Uuid
-  userId    String      @db.Uuid
-  deskripsi String?
-  createdAt DateTime    @default(now())
-  file      String?
-  status    StatusSurat @default(requested)
-  feedback  String?
-  user      User        @relation(fields: [userId], references: [id])
+  id          String      @id @default(uuid()) @db.Uuid
+  userId      String      @db.Uuid
+  deskripsi   String?
+  fasilitas   String
+  keperluan   String
+  tanggalMulai DateTime
+  tanggalSelesai DateTime
+  createdAt   DateTime    @default(now())
+  file        String?
+  status      StatusSurat @default(requested)
+  feedback    String?
+  user        User        @relation(fields: [userId], references: [id])
 }
 
 enum Role {

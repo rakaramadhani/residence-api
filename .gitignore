@@ -21,3 +21,6 @@ package-lock.json
 .vercel
 # Firebase Admin SDK JSON (jangan diupload ke repo)
 tasehatwalafiat-firebase-adminsdk-fbsvc-96b3dbb4d6.json
+
+# Uploads directory
+/uploads
