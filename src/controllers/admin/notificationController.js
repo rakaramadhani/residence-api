@@ -16,49 +16,54 @@ const notifikasiTagihan = async (req, res) => {
   if (!userId || !id || !bulan || !tahun) {
     return res
       .status(400)
-      .json({ success: false, message: "userID, id, bulan, tahun tidak boleh kosong" });
+      .json({
+        success: false,
+        message: "userID, id, bulan, tahun tidak boleh kosong",
+      });
   }
   let namaBulan = "";
-    switch (bulan) {
-        case 1:
-        namaBulan = "Januari";
-        break;
-        case 2:
-        namaBulan = "Februari";
-        break;
-        case 3:
-        namaBulan = "Maret";
-        break;
-        case 4:
-        namaBulan = "April";
-        break;
-        case 5:
-        namaBulan = "Mei";
-        break;
-        case 6:
-        namaBulan = "Juni";
-        break;
-        case 7:
-        namaBulan = "Juli";
-        break;
-        case 8:
-        namaBulan = "Agustus";
-        break;
-        case 9:
-        namaBulan = "September";
-        break;
-        case 10:
-        namaBulan = "Oktober";
-        break;
-        case 11:
-        namaBulan = "November";
-        break;
-        case 12:
-        namaBulan = "Desember";
-        break;
-        default:
-        return res.status(400).json({ success: false, message: "Bulan tidak valid" });
-    }
+  switch (bulan) {
+    case 1:
+      namaBulan = "Januari";
+      break;
+    case 2:
+      namaBulan = "Februari";
+      break;
+    case 3:
+      namaBulan = "Maret";
+      break;
+    case 4:
+      namaBulan = "April";
+      break;
+    case 5:
+      namaBulan = "Mei";
+      break;
+    case 6:
+      namaBulan = "Juni";
+      break;
+    case 7:
+      namaBulan = "Juli";
+      break;
+    case 8:
+      namaBulan = "Agustus";
+      break;
+    case 9:
+      namaBulan = "September";
+      break;
+    case 10:
+      namaBulan = "Oktober";
+      break;
+    case 11:
+      namaBulan = "November";
+      break;
+    case 12:
+      namaBulan = "Desember";
+      break;
+    default:
+      return res
+        .status(400)
+        .json({ success: false, message: "Bulan tidak valid" });
+  }
   try {
     // Ambil semua FCM token milik user
     const result = await prisma.fcmtoken.findMany({
@@ -91,7 +96,7 @@ const notifikasiTagihan = async (req, res) => {
     console.log(
       `Notifikasi dikirim ke user ${userId}. Sukses: ${response.successCount}, Gagal: ${response.failureCount}`
     );
-    console.log("Responses:", response.responses); 
+    console.log("Responses:", response.responses);
     res.status(200).json({
       success: true,
       sent: response.successCount,
@@ -105,62 +110,72 @@ const notifikasiTagihan = async (req, res) => {
 };
 
 const sendNotification = async (req, res) => {
-  const { title, body, token } = req.body;
+  let { userId, judul, isi, tipe } = req.body;
 
   // Validasi input
-  if (!title || !body || !token) {
-    return res
-      .status(400)
-      .json({ success: false, message: "title, body, dan token wajib diisi" });
+  if (!userId || !judul || !isi || !tipe) {
+    return res.status(400).json({
+      success: false,
+      message: "userId, judul, isi, dan tipe harus diisi",
+    });
   }
 
+  // Pastikan userId selalu dalam bentuk array
+  const userIds = Array.isArray(userId) ? userId : [userId];
+
+  const title = `${judul} - ${tipe}`;
+  const body = isi;
+
   try {
-    // Get the messaging service instance
-    const messaging = admin.messaging(); // <-- Get the instance here
+    // Simpan notifikasi ke DB untuk semua userId
+    await Promise.all(
+      userIds.map((id) =>
+        prisma.notifikasi.create({
+          data: {
+            userId: id,
+            judul,
+            isi,
+            tipe,
+          },
+        })
+      )
+    );
 
-    // Jika token adalah array, gunakan multicast
-    if (Array.isArray(token)) {
-      const message = {
-        notification: { title, body },
-        tokens: token, // array of tokens
-      };
+    // Ambil semua token FCM berdasarkan userId
+    const tokens = await getTokens(userIds); // Anda harus pastikan getTokens bisa menerima array dan mengembalikan semua token
 
-      // Use the instance to call the method
-      const response = await messaging.sendEachForMulticast(message); // <-- Call on the instance
-
-      console.log(
-        "Multicast sent. Success:",
-        response.successCount,
-        " Failure:",
-        response.failureCount
-      );
-      res.status(200).json({
-        success: true,
-        sent: response.successCount,
-        failed: response.failureCount,
-        responses: response.responses, // This contains details for each message attempt
+    if (!tokens.length) {
+      console.log(`User ${userIds.join(", ")} tidak punya FCM token.`);
+      return res.status(200).json({
+        success: false,
+        message: "Tidak ada token untuk user ini",
       });
-    } else {
-      // Jika token tunggal
-      const message = {
-        notification: { title, body },
-        token: token,
-      };
-
-      // Use the instance to call the method
-      const response = await messaging.send(message); // <-- Call on the instance
-
-      console.log("Single message sent:", response); // Response is the message ID string for single sends
-      res
-        .status(200)
-        .json({
-          success: true,
-          message: "Notification sent successfully",
-          messageId: response,
-        }); // Include messageId for confirmation
     }
+
+    const messaging = admin.messaging();
+
+    const message = {
+      notification: { title, body },
+      tokens: tokens, // array of tokens
+    };
+
+    const response = await messaging.sendEachForMulticast(message);
+
+    console.log(
+      "Multicast sent. Success:",
+      response.successCount,
+      " Failure:",
+      response.failureCount
+    );
+
+    res.status(200).json({
+      success: true,
+      sent: response.successCount,
+      failed: response.failureCount,
+      responses: response.responses,
+    });
   } catch (error) {
-    console.error("Error sending message:", error);
+    console.error("Error sending notification:", error);
     res.status(500).json({ success: false, error: error.message });
   }
 };
