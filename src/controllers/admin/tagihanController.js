@@ -242,7 +242,7 @@ const generateTagihanManual = async (req, res) => {
         errorList.push({ userId, error: error.message });
       }
     }
-
+    
     res.status(200).json({ 
       message: "Proses generate tagihan manual selesai", 
       berhasil: tagihanList.length,

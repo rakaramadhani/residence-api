@@ -9,7 +9,7 @@ const { getCluster, createCluster, updateCluster, deleteCluster } = require("../
 const { createPeraturan, deletePeraturan, updatePeraturan, getPeraturan } = require("../../controllers/admin/peraturanController");
 const { getTagihan, getTagihanSummary, updateTagihan, generateTagihanManual} = require("../../controllers/admin/tagihanController");
 const { getSurat, updateSurat, getDetailSurat, downloadSurat } = require("../../controllers/admin/suratController");
-const {sendNotification} = require("../../controllers/admin/notificationController");
+const {sendNotification, notifikasiTagihan} = require("../../controllers/admin/notificationController");
 
 const router = express.Router();
 
@@ -66,5 +66,6 @@ router.get("/admin/surat/:id/download", authenticateAdmin, downloadSurat);
 
 // notification
 router.post("/admin/notification", authenticateAdmin, sendNotification);
+router.post("/admin/notification/tagihan", notifikasiTagihan);
 
 module.exports = router;

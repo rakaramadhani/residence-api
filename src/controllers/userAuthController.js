@@ -69,8 +69,7 @@ const userDetails = async (req, res) => {
   try {
     const user = await prisma.user.findFirst({
       where: { 
-        id: req.user.id,
-        isActive: true // Hanya ambil user aktif
+        id: req.user.id, // Hanya ambil user aktif
       },
       select: {
         id: true,
