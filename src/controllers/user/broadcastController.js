@@ -59,7 +59,7 @@ const getAdminBroadcast = async (req, res) => {
       });
   
       if (!latestBroadcast) {
-        return res.status(404).json({ message: "Tidak ada broadcast dari admin" });
+        return res.status(200).json({ message: "Tidak ada broadcast dari admin" });
       }
   
       res.status(200).json({ message: "Success", data: latestBroadcast });

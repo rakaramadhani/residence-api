@@ -35,7 +35,7 @@ const login = async (req, res) => {
     }
 
     // Cek apakah user aktif
-    if (!user.isActive) {
+    if (user.isActive === false) {
       return res
         .status(403)
         .json({ message: "Access denied: Your account has been deactivated" });
@@ -69,8 +69,7 @@ const userDetails = async (req, res) => {
   try {
     const user = await prisma.user.findFirst({
       where: { 
-        id: req.user.id,
-        isActive: true // Hanya ambil user aktif
+        id: req.user.id, // Hanya ambil user aktif
       },
       select: {
         id: true,
