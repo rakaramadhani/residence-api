@@ -1,5 +1,6 @@
 const midtransClient = require("midtrans-client");
 const { PrismaClient } = require("@prisma/client");
+const { sendNotification } = require("../admin/notificationController");
 
 const prisma = new PrismaClient();
 
@@ -13,7 +14,6 @@ const coreApi = new midtransClient.CoreApi({
   clientKey: process.env.MIDTRANS_CLIENT,
   serverKey: process.env.MIDTRANS_SERVER_KEY,
 });
-
 
 const tokenizer = async (req, res) => {
   try {
@@ -118,7 +118,6 @@ const checkTransaksi = async (req, res) => {
   }
 };
 
-
 // ubah status
 const handleNotification = async (req, res) => {
   try {
@@ -134,7 +133,6 @@ const handleNotification = async (req, res) => {
 
     const uuidRegex =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 
     if (!uuidRegex.test(tagihanId)) {
       return res
@@ -157,7 +155,6 @@ const handleNotification = async (req, res) => {
 
     // Cek status transaksi, jika "settlement", update status tagihan menjadi "Lunas"
     if (transactionStatus === "settlement") {
-
       // Update status tagihan menjadi "Lunas"
       const updatedTagihan = await prisma.tagihan.update({
         where: { id: tagihanId },
@@ -165,10 +162,28 @@ const handleNotification = async (req, res) => {
           status_bayar: "lunas", // Ubah status menjadi "Lunas"
         },
       });
-
+      // Kirim notifikasi pembayaran berhasil
+      await sendNotification(
+        {
+          body: {
+            userId: tagihan.userId,
+            judul: "Berhasil melakukan pembayaran",
+            isi: "Terimakasih telah melakukan pembayaran IPL.",
+            tipe: "pembayaran",
+          },
+        },
+        {
+          status: (code) => ({
+            json: (data) => {
+              // Bisa log response jika mau, atau kosongkan saja
+              console.log("Fake res status", code, data);
+            },
+          }),
+        }
+      );
       const transaksi = await prisma.transaksi.create({
         data: {
-          userId: tagihan.userId, 
+          userId: tagihan.userId,
           grossAmount: parseFloat(notification.gross_amount),
           currency: notification.currency,
           paymentType: notification.payment_type,
@@ -184,7 +199,7 @@ const handleNotification = async (req, res) => {
             ? new Date(notification.expiry_time)
             : null,
           order: {
-            connect: { id: tagihan.id }, // Hubungkan dengan Tagihan yang sudah ada
+            connect: { id: tagihan.id },
           },
         },
       });
