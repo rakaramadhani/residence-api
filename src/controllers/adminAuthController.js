@@ -18,32 +18,32 @@ const adminLogin = async (req, res) => {
         const secret = process.env.SECRET_KEY;
         // Validasi input
         if (!email || !password) {
-            return res.status(400).json({ message: "Email and password are required" });
+            return res.status(400).json({ message: "Email dan password harus diisi" });
         }
 
         // Cek user
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({ message: 'Pengguna tidak ditemukan' });
         }
         if (user.role !== "admin") {
-            return res.status(403).json({ message: "Access denied: Only admin can login" });
+            return res.status(403).json({ message: "Access denied: Hanya admin yang dapat login" });
         }
 
         // Cek apakah user aktif
         if (user.isActive === false) {
-            return res.status(403).json({ message: "Access denied: Your account has been deactivated" });
+            return res.status(403).json({ message: "Access denied: Akun anda telah dinonaktifkan" });
         }
 
         // Jika password belum di-set
         if (!user.password) {
-            return res.status(400).json({ message: 'Password not set' });
+            return res.status(400).json({ message: 'Password belum di-set' });
         }
 
         // Cek password
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) {
-            return res.status(401).json({ message: 'Invalid credentials' });
+            return res.status(401).json({ message: 'Email atau password salah' });
         }
 
         // Buat token JWT
@@ -62,7 +62,7 @@ const adminLogin = async (req, res) => {
                 username: user.username,
                 role: user.role,
             },
-            message: 'Login successful'
+            message: 'Login berhasil'
         });
 
     } catch (error) {
@@ -80,9 +80,9 @@ const userDetails = async (req, res) => {
             } 
         });
         if (!user) {
-        return res.status(404).json({ message: "User not found" });
+        return res.status(404).json({ message: "Pengguna tidak ditemukan" });
         }
-        res.status(200).json({ message: "User Details", data: user });
+        res.status(200).json({ message: "Detail Pengguna", data: user });
     } catch (error) {
         console.error(error); 
         return res.status(500).json({ message: "Server error" });
@@ -92,7 +92,7 @@ const userDetails = async (req, res) => {
 const logout = async (req, res) => {
     try {
         res.clearCookie("token");
-        return res.status(200).json({ message: "Logout successful" });
+        return res.status(200).json({ message: "Logout berhasil" });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: "Server error" });

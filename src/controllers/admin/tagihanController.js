@@ -229,7 +229,7 @@ const generateTagihanManual = async (req, res) => {
         const tagihan = await prisma.tagihan.create({
           data: {
             userId,
-            metode_bayar: "manual",
+            metode_bayar: "otomatis",
             bulan: bulanInt,
             tahun: tahunInt,
             nominal: tagihanNominal,

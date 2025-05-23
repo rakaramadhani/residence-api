@@ -10,6 +10,7 @@ const { createPeraturan, deletePeraturan, updatePeraturan, getPeraturan } = requ
 const { getTagihan, getTagihanSummary, updateTagihan, generateTagihanManual} = require("../../controllers/admin/tagihanController");
 const { getSurat, updateSurat, getDetailSurat, downloadSurat } = require("../../controllers/admin/suratController");
 const {sendNotification, notifikasiTagihan} = require("../../controllers/admin/notificationController");
+const { getAllTransaksi, getTransaksiById } = require("../../controllers/admin/transaksiController");
 
 const router = express.Router();
 
@@ -20,7 +21,6 @@ router.get("/admin/user/:user_id",authenticateAdmin, detail);
 router.put("/admin/user/:user_id",authenticateAdmin, verifikasiUser);
 router.put("/admin/user/:user_id/update",authenticateAdmin, updateUser);
 router.delete('/admin/users/:user_id',authenticateAdmin, deleteUser);
-// Tambahkan route baru untuk dropdown cluster
 router.get("/admin/options/clusters", authenticateAdmin, getClustersForDropdown);
 
 // Pengaduan
@@ -67,5 +67,9 @@ router.get("/admin/surat/:id/download", authenticateAdmin, downloadSurat);
 // notification
 router.post("/admin/notification", authenticateAdmin, sendNotification);
 router.post("/admin/notification/tagihan", notifikasiTagihan);
+
+// transaksi
+router.get("/admin/transaksi", authenticateAdmin, getAllTransaksi);
+router.get("/admin/transaksi/:id", authenticateAdmin, getTransaksiById);
 
 module.exports = router;

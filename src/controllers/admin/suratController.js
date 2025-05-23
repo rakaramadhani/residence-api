@@ -13,6 +13,9 @@ const getSurat = async (req, res) => {
             email: true
           }
         }
+      },
+      orderBy: {
+        createdAt: 'desc'
       }
     });
     
