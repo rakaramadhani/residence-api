@@ -6,14 +6,39 @@ dotenv.config();
 const prisma = new PrismaClient();
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 // Buat Broadcast
 const createBroadcast = async (req, res) => {
   const { user_id } = req.params;
   const { kategori, broadcast, tanggal_acara } = req.body;
+  let fotoUrl = null;
+
   try {
+    // Jika ada foto yang di-upload, proses upload foto
+    if (req.file) {
+      const fileExt = req.file.originalname.split(".").pop();
+      const fileName = `broadcast_${Date.now()}.${fileExt}`;
+      const filePath = `broadcast/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("uploads")
+        .upload(filePath, req.file.buffer, {
+          contentType: req.file.mimetype,
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Ambil public URL setelah upload sukses
+      const { data: { publicUrl } } = supabase
+        .storage
+        .from("uploads")
+        .getPublicUrl(filePath);
+
+      fotoUrl = publicUrl;  // Set URL foto baru
+    }
+
     // Simpan data ke database
     const newBroadcast = await prisma.broadcast.create({
       data: {
@@ -21,6 +46,7 @@ const createBroadcast = async (req, res) => {
         kategori,
         broadcast,
         tanggal_acara: tanggal_acara || null,
+        foto: fotoUrl, // Simpan foto URL jika ada
         status_broadcast: "approved",
       },
     });
@@ -35,6 +61,7 @@ const createBroadcast = async (req, res) => {
 
     res.status(201).json({ success: true, data: newBroadcast });
   } catch (error) {
+    console.error("Create Broadcast Error:", error.message);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -42,7 +69,14 @@ const createBroadcast = async (req, res) => {
 // Get All Broadcast
 const broadcast = async (req, res) => {
   try {
-    const allUsers = await prisma.broadcast.findMany({});
+    const allUsers = await prisma.broadcast.findMany({
+      include: {
+        user: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
     res.status(200).json({ message: "Success", data: allUsers });
   } catch (error) {
     res

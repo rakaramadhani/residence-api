@@ -20,20 +20,31 @@ const getEmergency = async (req, res) => {
     }
 };
 
-// Get Emergency Alert
+// Get Emergency Alert untuk Modal Warning
 const getEmergencyAlert = async (req, res) => {
     try {
+        // Ambil emergency terbaru yang belum ditangani
         const emergencyAlert = await prisma.emergency.findFirst({
             orderBy: {
                 created_at: 'desc'
             },
             include: {
-                user: true  
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                        no_hp: true,
+                        cluster: true
+                    }
+                }
             }
         });
+        
         res.status(200).json({ 
             message: "Success", 
-            data: emergencyAlert 
+            data: emergencyAlert,
+            hasAlert: !!emergencyAlert // Boolean untuk cek ada alert atau tidak
         });
     } catch (error) {
         res.status(500).json({ 
@@ -43,4 +54,41 @@ const getEmergencyAlert = async (req, res) => {
     }
 };
 
-module.exports = {getEmergency, getEmergencyAlert};
+// Optional: Backend Subscription untuk Additional Processing
+const initEmergencySubscription = () => {
+    const channel = supabase
+        .channel('emergency_backend')
+        .on('postgres_changes', {
+            event: 'INSERT',
+            schema: 'public', 
+            table: 'emergency'
+        }, async (payload) => {
+            try {
+                console.log('Emergency baru detected:', payload.new);
+                
+                // Additional processing bisa ditambahkan di sini:
+                // 1. Send email notification
+                // 2. Push notification ke mobile
+                // 3. Log ke external service
+                // 4. Send WhatsApp/Telegram alert
+                
+                // Contoh: Update status menjadi 'notified'
+                // await prisma.emergency.update({
+                //     where: { id: payload.new.id },
+                //     data: { status: 'notified' }
+                // });
+                
+            } catch (error) {
+                console.error('Error processing emergency:', error);
+            }
+        })
+        .subscribe();
+        
+    console.log('Emergency subscription initialized');
+    return channel;
+};
+
+// Call this function saat server start (optional)
+// initEmergencySubscription();
+
+module.exports = {getEmergency, getEmergencyAlert, initEmergencySubscription};
