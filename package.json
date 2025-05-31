@@ -1,44 +1,16 @@
 {
   "name": "residence-api",
   "version": "1.0.0",
-  "description": "",
-  "main": "./src/server.js",
+  "description": "Residence API for Vercel",
+  "main": "api/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
-    "seed": "node ./prisma/seed.js",
-    "build": "prisma generate",
-    "postinstall": "prisma generate"
+    "start": "node api/index.js",
+    "dev": "node api/index.js"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "@prisma/client": "^6.5.0",
-    "@supabase/supabase-js": "^2.49.8",
-    "@vercel/node": "^5.1.14",
-    "bcrypt": "^5.1.1",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2",
-    "firebase-admin": "^13.4.0",
-    "fs-extra": "^11.3.0",
-    "joi": "^17.13.3",
-    "jsonwebtoken": "^9.0.2",
-    "midtrans": "^1.0.7",
-    "midtrans-client": "^1.4.2",
-    "multer": "^1.4.5-lts.2",
-    "node-cron": "^3.0.3",
-    "nodemailer": "^6.10.0",
-    "pdfkit": "^0.17.1",
-    "supabase": "^2.23.4",
-    "uuid": "^11.1.0"
+    "@vercel/node": "^3.0.0"
   },
-  "devDependencies": {
-    "@mermaid-js/mermaid-cli": "^11.4.2",
-    "nodemon": "^3.1.9",
-    "prisma": "^6.4.1",
-    "prisma-erd-generator": "^2.0.4",
-    "prisma-markdown": "^1.0.9"
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
