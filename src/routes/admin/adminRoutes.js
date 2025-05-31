@@ -9,7 +9,7 @@ const { getPenghuni, getPenghuniById } = require("../../controllers/admin/penghu
 const { getCluster, createCluster, updateCluster, deleteCluster } = require("../../controllers/admin/clusterController");       
 const { createPeraturan, deletePeraturan, updatePeraturan, getPeraturan } = require("../../controllers/admin/peraturanController");
 const { getTagihan, getTagihanSummary, updateTagihan, generateTagihanManual} = require("../../controllers/admin/tagihanController");
-const { getSurat, updateSurat, getDetailSurat, downloadSurat } = require("../../controllers/admin/suratController");
+const { getSurat, updateSurat, getDetailSurat, downloadSurat, debugSurat, testSupabaseConnection } = require("../../controllers/admin/suratController");
 const {sendNotification, notifikasiTagihan} = require("../../controllers/admin/notificationController");
 const { getAllTransaksi, getTransaksiById } = require("../../controllers/admin/transaksiController");
 
@@ -65,6 +65,8 @@ router.get("/admin/surat", authenticateAdmin, getSurat);
 router.get("/admin/surat/:id", authenticateAdmin, getDetailSurat);
 router.put("/admin/surat/:id", authenticateAdmin, updateSurat);
 router.get("/admin/surat/:id/download", authenticateAdmin, downloadSurat);
+router.get("/admin/surat/:id/debug", authenticateAdmin, debugSurat);
+router.get("/admin/test/supabase", authenticateAdmin, testSupabaseConnection);
 
 // notification
 router.post("/admin/notification", authenticateAdmin, sendNotification);

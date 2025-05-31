@@ -11,12 +11,25 @@ const { downloadFile: downloadFromStorage, getSignedUrl } = require('./supabaseS
  */
 const downloadFileFromStorage = async (req, res, storagePath, fileName) => {
   try {
+    console.log(`Starting download for file: ${storagePath}`);
+    
     // Download dari storage
     const fileBuffer = await downloadFromStorage(storagePath);
     
+    if (!fileBuffer || fileBuffer.length === 0) {
+      console.error('File buffer is empty or null');
+      return res.status(500).json({ message: 'File buffer kosong' });
+    }
+    
+    console.log(`File buffer received, size: ${fileBuffer.length} bytes`);
+    
     // Set header untuk download
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.setHeader('Content-Length', fileBuffer.length);
+    res.setHeader('Cache-Control', 'no-cache');
+    
+    console.log(`Sending file buffer to client...`);
     
     // Kirim buffer ke response
     res.send(fileBuffer);

@@ -16,6 +16,28 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Fungsi helper untuk mendapatkan bucket name
+const getBucketName = async () => {
+  try {
+    // Prioritas: Environment variable, lalu default 'uploads'
+    let bucketName = process.env.SUPABASE_STORAGE_BUCKET || 'uploads';
+    
+    // Verifikasi bucket exists
+    const { data: buckets } = await supabase.storage.listBuckets();
+    const bucketExists = buckets.some(bucket => bucket.name === bucketName);
+    
+    if (!bucketExists && buckets.length > 0) {
+      bucketName = buckets[0].name;
+      console.log(`Bucket '${process.env.SUPABASE_STORAGE_BUCKET || 'uploads'}' tidak ditemukan. Menggunakan: ${bucketName}`);
+    }
+    
+    return bucketName;
+  } catch (error) {
+    console.error('Error getting bucket name:', error);
+    throw error;
+  }
+};
+
 /**
  * Upload file ke Supabase Storage
  * @param {Buffer} fileBuffer - Buffer file
@@ -26,18 +48,8 @@ const supabase = createClient(supabaseUrl, supabaseKey);
  */
 const uploadFile = async (fileBuffer, fileName, folderName = 'surat', contentType = 'application/pdf') => {
   try {
-    // Ambil semua bucket yang tersedia
-    const { data: buckets } = await supabase.storage.listBuckets();
-    
-    // Default menggunakan bucket pertama yang ditemukan jika tidak ada yang ditentukan di env
-    let bucketName = 'uploads';
-    
-    if (!bucketName && buckets.length > 0) {
-      bucketName = buckets[0].name;
-      console.log(`Menggunakan bucket default: ${bucketName}`);
-    } else if (!bucketName) {
-      throw new Error('Tidak ada bucket yang tersedia dan SUPABASE_STORAGE_BUCKET tidak diatur');
-    }
+    const bucketName = await getBucketName();
+    console.log(`Uploading file to bucket: ${bucketName}`);
 
     // Path file di storage
     const filePath = `${folderName}/${fileName}`;
@@ -77,27 +89,32 @@ const uploadFile = async (fileBuffer, fileName, folderName = 'surat', contentTyp
  */
 const downloadFile = async (filePath) => {
   try {
-    // Cek apakah bucket ditentukan
-    let bucketName = process.env.SUPABASE_STORAGE_BUCKET;
-    
-    if (!bucketName) {
-      const { data: buckets } = await supabase.storage.listBuckets();
-      if (buckets.length > 0) {
-        bucketName = buckets[0].name;
-      } else {
-        throw new Error('Tidak ada bucket yang tersedia');
-      }
-    }
+    const bucketName = await getBucketName();
+    console.log(`Downloading file from bucket: ${bucketName}, path: ${filePath}`);
 
     const { data, error } = await supabase.storage
       .from(bucketName)
       .download(filePath);
 
     if (error) {
+      console.error('Supabase download error:', error);
       throw new Error(`Error downloading file: ${error.message}`);
     }
 
-    return data;
+    if (!data) {
+      throw new Error('File data is null or undefined');
+    }
+
+    // Konversi Blob menjadi Buffer
+    console.log('File downloaded successfully, converting Blob to Buffer...');
+    console.log('Blob size:', data.size, 'bytes');
+    
+    const arrayBuffer = await data.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    
+    console.log('Buffer size:', buffer.length, 'bytes');
+    
+    return buffer;
   } catch (error) {
     console.error('Error downloading from Supabase Storage:', error);
     throw error;
@@ -112,17 +129,8 @@ const downloadFile = async (filePath) => {
  */
 const getSignedUrl = async (filePath, expiresIn = 60 * 60) => {
   try {
-    // Cek apakah bucket ditentukan
-    let bucketName = process.env.SUPABASE_STORAGE_BUCKET;
-    
-    if (!bucketName) {
-      const { data: buckets } = await supabase.storage.listBuckets();
-      if (buckets.length > 0) {
-        bucketName = buckets[0].name;
-      } else {
-        throw new Error('Tidak ada bucket yang tersedia');
-      }
-    }
+    const bucketName = await getBucketName();
+    console.log(`Getting signed URL from bucket: ${bucketName}, path: ${filePath}`);
 
     const { data, error } = await supabase.storage
       .from(bucketName)
