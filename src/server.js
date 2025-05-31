@@ -7,10 +7,9 @@ const adminAuthRoutes = require("./routes/admin/adminAuthRoutes");
 const adminRoutes = require("./routes/admin/adminRoutes");
 const userAuthRoutes = require("./routes/penghuni/penghuniAuthRoutes");
 const userRoutes = require("./routes/penghuni/penghuniRoutes");
-const seeder = require("../prisma/seed");
+
 // Import scheduler tagihan
 const { startScheduler } = require('./controllers/admin/tagihanController');
-
 
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
@@ -23,27 +22,33 @@ app.use("/api", adminRoutes);
 app.use("/api", userAuthRoutes);
 app.use("/api", userRoutes);
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3000;
 
-async function startServer() {
-  // Ambil seeder
-  await seeder()
-    .catch((e) => {
-      console.error(e);
-      process.exit(1);
-    })
-    .finally(async () => {
-      await prisma.$disconnect();
-    });
-
-  // Mulai scheduler tagihan otomatis
+// Untuk Vercel, kita perlu export app
+if (process.env.NODE_ENV === 'production') {
+  // Di production (Vercel), jalankan scheduler saat startup
   startScheduler();
+  module.exports = app;
+} else {
+  // Di development, jalankan server seperti biasa
+  async function startServer() {
+    const seeder = require("../prisma/seed");
+    
+    await seeder()
+      .catch((e) => {
+        console.error(e);
+        process.exit(1);
+      })
+      .finally(async () => {
+        await prisma.$disconnect();
+      });
 
+    startScheduler();
+    
+    app.listen(PORT, () => {
+      console.log(`Server is running on http://localhost:${PORT}`);
+    });
+  }
   
-  // Port
-  app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-  });
+  startServer();
 }
-  
-startServer();

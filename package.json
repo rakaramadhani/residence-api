@@ -5,9 +5,10 @@
   "main": "./src/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon .",
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
     "seed": "node ./prisma/seed.js",
-    "dev": "node ./prisma/seed.js && node ./src/server.js"
+    "build": "prisma generate"
   },
   "author": "",
   "license": "ISC",
