@@ -6,7 +6,7 @@ const getSurat = async (req, res) => {
     try {
         const { user_id } = req.params;
         const surat = await prisma.surat.findMany({
-            where: { userId: user_id },
+            where: { userId: user_id }, orderBy: { createdAt: 'desc' },
         });
         if (!surat.length) {
             return res.status(200).json({ message: "No surat found" });

@@ -68,7 +68,7 @@ const login = async (req, res) => {
 const userDetails = async (req, res) => {
   try {
     const user = await prisma.user.findFirst({
-      where: { 
+      where: {
         id: req.user.id, // Hanya ambil user aktif
       },
       select: {
@@ -189,8 +189,19 @@ const resetPassword = async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: user.email,
-      subject: "Reset Password",
-      text: `Klik link berikut untuk mereset password Anda: ${resetLink}`,
+      subject: "Reset Password Akun Cherry Field",
+      html: `
+    <div style="font-family: Arial, sans-serif; color: #333;">
+      <p>Halo <strong>${user.username}</strong>,</p>
+      <p>Semoga Anda dalam keadaan sehat.</p>
+      <p>Kami menerima permintaan untuk mereset password akun Anda di <strong>Cherry Field</strong>.</p>
+      <p>Silakan klik tautan di bawah ini untuk mengganti password Anda:</p>
+      <p><a href="${resetLink}" style="color: #1a73e8;">Reset Password Sekarang</a></p>
+      <br>
+      <p>Jika Anda tidak meminta ini, abaikan saja email ini.</p>
+      <p>Salam hangat,<br><em>Sehat Walafiat</em></p>
+    </div>
+  `,
     };
 
     // Kirim email

@@ -32,6 +32,8 @@ const{
   deleteBroadcast,
 } = require("../../controllers/user/broadcastController");
 
+const { getGuestPermissions, createGuestPermission, deleteGuestPermission } = require("../../controllers/user/guestPermissionController");
+
 // data keluarga
 router.get("/user/:user_id/penghuni", authenticatePenghuni, checkVerified, getFamilyData);
 router.post("/user/:user_id/penghuni",authenticatePenghuni,checkVerified, createFamilyData);
@@ -77,5 +79,10 @@ router.get("/user/surat/:id/url", authenticatePenghuni, checkVerified, getUrlSur
 
 // notif
 router.post("/user/fcm", authenticatePenghuni, checkVerified, createFCM);
+
+// guest permission
+router.get("/user/:user_id/guest-permission", authenticatePenghuni, checkVerified, getGuestPermissions);
+router.post("/user/:user_id/guest-permission", authenticatePenghuni, checkVerified, createGuestPermission);
+router.delete("/user/:user_id/guest-permission/:id", authenticatePenghuni, checkVerified, deleteGuestPermission);
 
 module.exports = router;

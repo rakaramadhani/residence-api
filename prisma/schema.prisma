@@ -12,35 +12,35 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-  model User {
-    id          String       @id @default(uuid()) @db.Uuid
-    createdAt   DateTime     @default(now())
-    updatedAt   DateTime     @updatedAt
-    email       String       @unique
-    username    String?
-    password    String
-    phone       String?
-    role        Role         @default(penghuni)
-    isVerified  Boolean?
-    feedback    String?
-    cluster     String?
-    nomor_rumah String?
-    rt          String?
-    rw          String?
-    isActive    Boolean      @default(true)
-    deletedAt   DateTime?
-    penghuni    Penghuni[]
-    broadcast   Broadcast[]
-    emergency       Emergency[]
-    Pengaduan   Pengaduan[]
-    surat       Surat[]
-    tagihan     Tagihan[]
-    notifikasi  Notifikasi[]
-    fcmToken    Fcmtoken[]
-    clusterId   Int?
-    clusterRef  Cluster?    @relation(fields: [clusterId], references: [id])
-  }
-
+model User {
+  id          String       @id @default(uuid()) @db.Uuid
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  email       String       @unique
+  username    String?
+  password    String
+  phone       String?
+  role        Role         @default(penghuni)
+  isVerified  Boolean?
+  feedback    String?
+  cluster     String?
+  nomor_rumah String?
+  rt          String?
+  rw          String?
+  isActive    Boolean      @default(true)
+  deletedAt   DateTime?
+  penghuni    Penghuni[]
+  broadcast   Broadcast[]
+  emergency   Emergency[]
+  Pengaduan   Pengaduan[]
+  surat       Surat[]
+  tagihan     Tagihan[]
+  notifikasi  Notifikasi[]
+  fcmToken    Fcmtoken[]
+  guestPermission GuestPermission[]
+  clusterId   Int?
+  clusterRef  Cluster?     @relation(fields: [clusterId], references: [id])
+}
 
 model Tagihan {
   id             String      @id @default(uuid()) @db.Uuid
@@ -49,7 +49,7 @@ model Tagihan {
   bulan          Int
   tahun          Int
   nominal        Int
-  snap_token    String?
+  snap_token     String?
   createdAt      DateTime    @default(now())
   status_bayar   StatusBayar @default(belumLunas)
   user           User        @relation(fields: [userId], references: [id])
@@ -58,7 +58,7 @@ model Tagihan {
   reminderCount  Int         @default(0)
 }
 
-model Fcmtoken{
+model Fcmtoken {
   id        String   @id @default(uuid()) @db.Uuid
   userId    String   @db.Uuid
   token     String
@@ -138,15 +138,15 @@ model Cluster {
 }
 
 model Emergency {
-  id         String   @id @default(uuid())
-  userId     String   @db.Uuid
-  latitude   Float    @db.DoublePrecision
-  longitude  Float    @db.DoublePrecision
-  kategori   String?
+  id              String   @id @default(uuid())
+  userId          String   @db.Uuid
+  latitude        Float    @db.DoublePrecision
+  longitude       Float    @db.DoublePrecision
+  kategori        String?
   detail_kejadian String?
-  created_at DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  user       User     @relation(fields: [userId], references: [id])
+  created_at      DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id])
 }
 
 model Notifikasi {
@@ -160,18 +160,29 @@ model Notifikasi {
 }
 
 model Surat {
-  id          String      @id @default(uuid()) @db.Uuid
-  userId      String      @db.Uuid
-  deskripsi   String?
-  fasilitas   String
-  keperluan   String
-  tanggalMulai DateTime
+  id             String      @id @default(uuid()) @db.Uuid
+  userId         String      @db.Uuid
+  deskripsi      String?
+  fasilitas      String?
+  keperluan      String
+  tanggalMulai   DateTime
   tanggalSelesai DateTime
-  createdAt   DateTime    @default(now())
-  file        String?
-  status      StatusSurat @default(requested)
-  feedback    String?
-  user        User        @relation(fields: [userId], references: [id])
+  createdAt      DateTime    @default(now())
+  file           String?
+  status         StatusSurat @default(requested)
+  feedback       String?
+  user           User        @relation(fields: [userId], references: [id])
+}
+
+model GuestPermission {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @db.Uuid
+  guestName      String
+  startVisitDate DateTime
+  endVisitDate   DateTime
+  qrUrl         String?
+  createdAt      DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id])
 }
 
 enum Role {

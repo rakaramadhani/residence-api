@@ -190,9 +190,11 @@ const notifikasiTagihan = async (req, res) => {
 //   }
 // };
 
-const sendNotification = async (req, res) => {
+const 
+sendNotification = async (req, res) => {
   let { userId, judul, isi, tipe } = req.body;
 
+  
   // Validasi input
   if (!userId || !judul || !isi || !tipe) {
     return res.status(400).json({
