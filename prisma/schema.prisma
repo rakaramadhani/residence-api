@@ -13,33 +13,33 @@ datasource db {
 }
 
 model User {
-  id          String       @id @default(uuid()) @db.Uuid
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  email       String       @unique
-  username    String?
-  password    String
-  phone       String?
-  role        Role         @default(penghuni)
-  isVerified  Boolean?
-  feedback    String?
-  cluster     String?
-  nomor_rumah String?
-  rt          String?
-  rw          String?
-  isActive    Boolean      @default(true)
-  deletedAt   DateTime?
-  penghuni    Penghuni[]
-  broadcast   Broadcast[]
-  emergency   Emergency[]
-  Pengaduan   Pengaduan[]
-  surat       Surat[]
-  tagihan     Tagihan[]
-  notifikasi  Notifikasi[]
-  fcmToken    Fcmtoken[]
+  id              String            @id @default(uuid()) @db.Uuid
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  email           String            @unique
+  username        String?
+  password        String
+  phone           String?
+  role            Role              @default(penghuni)
+  isVerified      Boolean?
+  feedback        String?
+  cluster         String?
+  nomor_rumah     String?
+  rt              String?
+  rw              String?
+  isActive        Boolean           @default(true)
+  deletedAt       DateTime?
+  penghuni        Penghuni[]
+  broadcast       Broadcast[]
+  emergency       Emergency[]
+  Pengaduan       Pengaduan[]
+  surat           Surat[]
+  tagihan         Tagihan[]
+  notifikasi      Notifikasi[]
+  fcmToken        Fcmtoken[]
   guestPermission GuestPermission[]
-  clusterId   Int?
-  clusterRef  Cluster?     @relation(fields: [clusterId], references: [id])
+  clusterId       Int?
+  clusterRef      Cluster?          @relation(fields: [clusterId], references: [id])
 }
 
 model Tagihan {
@@ -175,14 +175,20 @@ model Surat {
 }
 
 model GuestPermission {
-  id             String   @id @default(uuid()) @db.Uuid
-  userId         String   @db.Uuid
+  id             String     @id @default(uuid()) @db.Uuid
+  userId         String     @db.Uuid
   guestName      String
   startVisitDate DateTime
   endVisitDate   DateTime
-  qrUrl         String?
-  createdAt      DateTime @default(now())
-  user          User     @relation(fields: [userId], references: [id])
+  qrUrl          String?
+  status         StatusTamu @default(scheduled)
+  createdAt      DateTime   @default(now())
+  user           User       @relation(fields: [userId], references: [id])
+}
+
+enum StatusTamu {
+  scheduled
+  arrived
 }
 
 enum Role {

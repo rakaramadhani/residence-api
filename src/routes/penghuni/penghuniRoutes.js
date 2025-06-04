@@ -9,6 +9,7 @@ const { getTagihan, getRiwayatTagihan } = require("../../controllers/user/tagiha
 const { getPeraturan } = require("../../controllers/user/peraturanController");
 const { createEmergency, getEmergency } = require("../../controllers/user/emergencyController");
 const { createFCM } = require(".././../notification/fcm");
+const {scanGuestPermission} = require("../../controllers/guest/guestController");
 const {
   getFamilyData,
   createFamilyData,
@@ -84,5 +85,8 @@ router.post("/user/fcm", authenticatePenghuni, checkVerified, createFCM);
 router.get("/user/:user_id/guest-permission", authenticatePenghuni, checkVerified, getGuestPermissions);
 router.post("/user/:user_id/guest-permission", authenticatePenghuni, checkVerified, createGuestPermission);
 router.delete("/user/:user_id/guest-permission/:id", authenticatePenghuni, checkVerified, deleteGuestPermission);
+
+// scan guest permission
+router.post("/guest-permission/scan/:id", scanGuestPermission);
 
 module.exports = router;

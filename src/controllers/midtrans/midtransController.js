@@ -168,8 +168,8 @@ const handleNotification = async (req, res) => {
           body: {
             userId: tagihan.userId,
             judul: "Berhasil melakukan pembayaran",
-            isi: "Terimakasih telah melakukan pembayaran IPL.",
-            tipe: "pembayaran",
+            isi: `Terimakasih ${tagihan.user.username},  pembayaran tagihan IPL telah berhasil.`,
+            tipe: "Pembayaran",
           },
         },
         {

@@ -190,11 +190,9 @@ const notifikasiTagihan = async (req, res) => {
 //   }
 // };
 
-const 
-sendNotification = async (req, res) => {
+const sendNotification = async (req, res) => {
   let { userId, judul, isi, tipe } = req.body;
 
-  
   // Validasi input
   if (!userId || !judul || !isi || !tipe) {
     return res.status(400).json({
@@ -206,7 +204,7 @@ sendNotification = async (req, res) => {
   // Pastikan userId selalu dalam bentuk array
   const userIds = Array.isArray(userId) ? userId : [userId];
 
-  const title = `${judul} - ${tipe}`;
+  const title = `${tipe} - ${judul}`;
   const body = isi;
 
   try {

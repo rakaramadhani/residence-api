@@ -34,16 +34,35 @@ const createGuestPermission = async (req, res) => {
     const { user_id } = req.params;
     const { guestName, startVisitDate, endVisitDate } = req.body;
 
-    // Validasi input
+    // Validasi input dasar
     if (!guestName || !startVisitDate || !endVisitDate) {
       return res.status(400).json({
         message: "guestName, startVisitDate, and endVisitDate are required",
       });
     }
 
+    // Validasi tanggal: endVisitDate tidak boleh sebelum startVisitDate
+    const start = new Date(startVisitDate);
+    const end = new Date(endVisitDate);
+
+    if (isNaN(start) || isNaN(end)) {
+      return res.status(400).json({ message: "Invalid date format" });
+    }
+
+    if (end < start) {
+      return res.status(400).json({
+        message: "endVisitDate cannot be earlier than startVisitDate",
+      });
+    }
+
+    // Cari user
     const user = await prisma.user.findUnique({
       where: { id: user_id },
     });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     // Simpan data awal ke DB
     const newPermission = await prisma.guestPermission.create({
@@ -60,9 +79,12 @@ const createGuestPermission = async (req, res) => {
     // Buat isi QR sebagai JSON string
     const qrPayload = {
       id: permissionId,
+      userId: user.id,
+      userName: user.username,
       guestName,
       startVisitDate,
       endVisitDate,
+      status: newPermission.status,
     };
     const qrData = JSON.stringify(qrPayload);
 
