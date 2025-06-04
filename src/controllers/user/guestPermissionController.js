@@ -13,9 +13,9 @@ dotenv.config();
 // Get Guest Permissions
 const getGuestPermissions = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const { user_id } = req.params;
     const permissions = await prisma.guestPermission.findMany({
-      where: { userId },
+      where: { userId: user_id },
       orderBy: { createdAt: "desc" },
     });
     if (!permissions.length) {
