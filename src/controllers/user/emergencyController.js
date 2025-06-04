@@ -19,27 +19,51 @@ const createEmergency = async (req, res) => {
       return res.status(400).json({ message: "User ID is required" });
     }
 
+    // Buat emergency (status default 'pending' sudah ada di database)
     const newEmergency = await prisma.emergency.create({
       data: {
         userId: user_id,
         latitude,
         longitude,
       },
+      // ✅ TAMBAHKAN include untuk dapat user data
+      include: {
+        user: true
+      }
     });
 
-    const response = await supabase.channel("all_changes").send({
-      type: "broadcast",
-      event: "new_emergency",
-      payload: newEmergency,
-    });
+    // ✅ FORMAT BROADCAST YANG BENAR
+    try {
+      const channel = supabase.channel("all_changes");
+      
+      // Subscribe ke channel dulu
+      await new Promise((resolve) => {
+        channel.subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            resolve(true);
+          }
+        });
+      });
 
-    console.log("Supabase Event Sent:", response);
+      // Kirim broadcast
+      const response = await channel.send({
+        type: "broadcast",
+        event: "new_emergency", 
+        payload: newEmergency
+      });
+
+      console.log("Supabase Event Sent:", response);
+    } catch (broadcastError) {
+      console.error("Broadcast error:", broadcastError);
+      // Jangan fail request jika broadcast gagal
+    }
+
     return res.status(201).json({
       message: "Emergency reported successfully",
       data: newEmergency,
-      supabaseResponse: response,
     });
   } catch (error) {
+    console.error("Error creating emergency:", error);
     res.status(500).json({ message: error.message });
   }
 };

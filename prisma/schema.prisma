@@ -144,6 +144,7 @@ model Emergency {
   longitude       Float    @db.DoublePrecision
   kategori        String?
   detail_kejadian String?
+  status          String?  @default("pending")  
   created_at      DateTime @default(now())
   updatedAt       DateTime @updatedAt
   user            User     @relation(fields: [userId], references: [id])

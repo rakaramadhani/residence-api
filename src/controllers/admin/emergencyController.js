@@ -23,28 +23,21 @@ const getEmergency = async (req, res) => {
 // Get Emergency Alert untuk Modal Warning
 const getEmergencyAlert = async (req, res) => {
     try {
-        // Ambil emergency terbaru yang belum ditangani
         const emergencyAlert = await prisma.emergency.findFirst({
+            where: {
+                status: 'pending' // Tambahkan filter status
+            },
             orderBy: {
                 created_at: 'desc'
             },
             include: {
-                user: {
-                    select: {
-                        id: true,
-                        username: true,
-                        email: true,
-                        no_hp: true,
-                        cluster: true
-                    }
-                }
+                user: true
             }
         });
-        
         res.status(200).json({ 
             message: "Success", 
             data: emergencyAlert,
-            hasAlert: !!emergencyAlert // Boolean untuk cek ada alert atau tidak
+            hasAlert: !!emergencyAlert
         });
     } catch (error) {
         res.status(500).json({ 
@@ -115,5 +108,15 @@ const initEmergencySubscription = () => {
     return channel;
 };
 
+const getEmergencyById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const emergency = await prisma.emergency.findUnique({ where: { id }, include: {user: true} });
+        res.status(200).json({ message: "Success", data: emergency });
+    } catch (error) {
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+}
 
-module.exports = {getEmergency, getEmergencyAlert, initEmergencySubscription, updateEmergency, deleteEmergency};
+
+module.exports = {getEmergency, getEmergencyAlert, initEmergencySubscription, updateEmergency, deleteEmergency, getEmergencyById};
