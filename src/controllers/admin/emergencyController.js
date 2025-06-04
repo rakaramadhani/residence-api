@@ -54,6 +54,33 @@ const getEmergencyAlert = async (req, res) => {
     }
 };
 
+const updateEmergency = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { kategori, detail_kejadian } = req.body;
+
+        const updatedEmergency = await prisma.emergency.update({
+            where: { id },
+            data: { kategori, detail_kejadian }
+        });
+
+        res.status(200).json({ message: "Success", data: updatedEmergency });
+        
+    } catch (error) {
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+}
+
+const deleteEmergency = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await prisma.emergency.delete({ where: { id } });
+        res.status(200).json({ message: "Success" });
+    } catch (error) {
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+}
+
 // Optional: Backend Subscription untuk Additional Processing
 const initEmergencySubscription = () => {
     const channel = supabase
@@ -88,7 +115,5 @@ const initEmergencySubscription = () => {
     return channel;
 };
 
-// Call this function saat server start (optional)
-// initEmergencySubscription();
 
-module.exports = {getEmergency, getEmergencyAlert, initEmergencySubscription};
+module.exports = {getEmergency, getEmergencyAlert, initEmergencySubscription, updateEmergency, deleteEmergency};

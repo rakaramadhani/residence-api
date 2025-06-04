@@ -49,10 +49,10 @@ const generateSuratPerizinan = async (data) => {
       // Nama file
       const fileName = `surat_perizinan_${data.id}.pdf`;
       
-      // Buat PDF dokumen
+      // Buat PDF dokumen dengan margin yang lebih besar untuk tampilan formal
       const doc = new PDFDocument({
         size: 'A4',
-        margins: { top: 50, bottom: 50, left: 50, right: 50 }
+        margins: { top: 60, bottom: 60, left: 60, right: 60 }
       });
       
       // Buffer untuk menyimpan PDF
@@ -80,47 +80,204 @@ const generateSuratPerizinan = async (data) => {
         }
       });
       
-      // Kop surat
-      doc.fontSize(16).font('Helvetica-Bold').text('SURAT PERIZINAN PENGGUNAAN FASILITAS', { align: 'center' });
-      doc.fontSize(14).font('Helvetica-Bold').text('RESIDENCE APP', { align: 'center' });
-      doc.moveDown();
-      doc.fontSize(12).font('Helvetica').text('Nomor: ' + data.id, { align: 'center' });
+      // === KOP SURAT (HEADER) ===
+      const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+      
+      // Logo/Header utama
+      doc.fontSize(18)
+         .font('Helvetica-Bold')
+         .text('PENGELOLA RESIDENCE', { align: 'center' });
+      
+      doc.fontSize(16)
+         .font('Helvetica-Bold')
+         .text('KOMPLEKS PERUMAHAN JAKARTA', { align: 'center' });
+      
+      doc.fontSize(10)
+         .font('Helvetica')
+         .text('Jl. Residence No. 123, Jakarta Selatan 12345', { align: 'center' });
+      
+      doc.text('Telp: (021) 1234-5678 | Email: info@residence.com', { align: 'center' });
+      
+      // Garis pemisah header
+      doc.moveDown(1);
+      const currentY = doc.y;
+      doc.moveTo(60, currentY)
+         .lineTo(60 + pageWidth, currentY)
+         .strokeColor('#000000')
+         .lineWidth(2)
+         .stroke();
+      
+      doc.moveDown(0.5);
+      doc.moveTo(60, doc.y)
+         .lineTo(60 + pageWidth, doc.y)
+         .strokeColor('#000000')
+         .lineWidth(0.5)
+         .stroke();
+      
       doc.moveDown(2);
       
-      // Isi surat
-      doc.fontSize(12).font('Helvetica');
-      doc.text('Yang bertanda tangan di bawah ini menyetujui:');
-      doc.moveDown();
+      // === JUDUL SURAT ===
+      doc.fontSize(14)
+         .font('Helvetica-Bold')
+         .text('SURAT PERIZINAN PENGGUNAAN FASILITAS', { align: 'center' });
       
-      // Tabel informasi
+      // Nomor surat formal
+      const currentDate = new Date();
+      const nomorSurat = `${data.id.substring(0, 8).toUpperCase()}/PGF/${currentDate.getFullYear()}`;
+      
+      doc.moveDown(1);
+      doc.fontSize(11)
+         .font('Helvetica')
+         .text(`Nomor: ${nomorSurat}`, { align: 'center' });
+      
+      doc.moveDown(2);
+      
+      // === ISI SURAT ===
+      doc.fontSize(11)
+         .font('Helvetica')
+         .text('Yang bertanda tangan di bawah ini, Pengelola Kompleks Residence, dengan ini memberikan izin kepada:', { align: 'justify' });
+      
+      doc.moveDown(1.5);
+      
+      // === TABEL INFORMASI PEMOHON ===
+      const tableStartY = doc.y;
+      const leftMargin = 80;
+      const colonPosition = 200;
+      const valuePosition = 220;
+      const rowHeight = 20;
+      
+      // Data untuk tabel
       const tableData = [
-        ['Nama', ': ' + data.nama],
-        ['Fasilitas', ': ' + data.fasilitas],
-        ['Keperluan', ': ' + data.keperluan],
-        ['Tanggal Penggunaan', ': ' + formatTanggal(data.tanggalMulai)],
-        ['Waktu Mulai', ': ' + formatWaktu(data.tanggalMulai)],
-        ['Waktu Selesai', ': ' + formatWaktu(data.tanggalSelesai)]
+        ['Nama Lengkap', data.nama],
+        ['Fasilitas yang Diminta', data.fasilitas],
+        ['Keperluan Penggunaan', data.keperluan],
+        ['Tanggal Penggunaan', formatTanggal(data.tanggalMulai)],
+        ['Waktu Mulai', formatWaktu(data.tanggalMulai) + ' WIB'],
+        ['Waktu Selesai', formatWaktu(data.tanggalSelesai) + ' WIB']
       ];
       
-      let y = doc.y;
-      tableData.forEach(row => {
-        doc.text(row[0], 50, y, { continued: false });
-        doc.text(row[1], 150, y);
-        y += 25;
+      // Gambar border tabel
+      const tableHeight = tableData.length * rowHeight + 10;
+      doc.rect(leftMargin - 10, tableStartY - 5, pageWidth - (leftMargin - 60) * 2 + 20, tableHeight)
+         .strokeColor('#cccccc')
+         .lineWidth(1)
+         .stroke();
+      
+      let currentTableY = tableStartY;
+      
+      tableData.forEach((row, index) => {
+        // Background alternating untuk setiap baris
+        if (index % 2 === 0) {
+          doc.rect(leftMargin - 10, currentTableY - 2, pageWidth - (leftMargin - 60) * 2 + 20, rowHeight)
+             .fillColor('#f8f8f8')
+             .fill();
+        }
+        
+        // Label
+        doc.fillColor('#000000')
+           .fontSize(10)
+           .font('Helvetica')
+           .text(row[0], leftMargin, currentTableY, { continued: false });
+        
+        // Titik dua
+        doc.text(':', colonPosition, currentTableY);
+        
+        // Nilai
+        doc.font('Helvetica-Bold')
+           .text(row[1], valuePosition, currentTableY, { 
+             width: pageWidth - (valuePosition - 60) - 20,
+             align: 'left'
+           });
+        
+        currentTableY += rowHeight;
       });
       
-      doc.moveDown(2);
-      doc.text('Untuk menggunakan fasilitas tersebut sesuai dengan keperluan yang telah disebutkan di atas.', { align: 'justify' });
-      doc.moveDown();
-      doc.text('Pihak pengguna fasilitas wajib mematuhi peraturan yang berlaku dan bertanggung jawab atas fasilitas yang digunakan.', { align: 'justify' });
+      doc.y = tableStartY + tableHeight + 20;
+      
+      // === KETENTUAN DAN SYARAT ===
+      doc.fontSize(11)
+         .font('Helvetica')
+         .text('Untuk menggunakan fasilitas tersebut dengan ketentuan sebagai berikut:', { align: 'justify' });
+      
+      doc.moveDown(1);
+      
+      const syaratList = [
+        'Pengguna wajib mematuhi semua peraturan yang berlaku di kompleks residence.',
+        'Pengguna bertanggung jawab penuh atas kerusakan yang terjadi pada fasilitas.',
+        'Pengguna wajib menjaga kebersihan dan ketertiban selama penggunaan fasilitas.',
+        'Surat izin ini tidak dapat dipindahtangankan kepada pihak lain.',
+        'Pengelola berhak membatalkan izin jika terjadi pelanggaran ketentuan.'
+      ];
+      
+      syaratList.forEach((syarat, index) => {
+        doc.fontSize(10)
+           .font('Helvetica')
+           .text(`${index + 1}. ${syarat}`, { 
+             align: 'justify',
+             indent: 20
+           });
+        doc.moveDown(0.5);
+      });
+      
+      doc.moveDown(1);
+      
+      // === PENUTUP ===
+      doc.fontSize(11)
+         .font('Helvetica')
+         .text('Demikian surat izin ini dibuat untuk dapat dipergunakan sebagaimana mestinya.', { align: 'justify' });
       
       doc.moveDown(2);
       
-      // Tanda tangan
+      // === TANDA TANGAN ===
       const today = new Date();
-      doc.text(`Jakarta, ${formatTanggal(today)}`, { align: 'right' });
-      doc.moveDown(4);
-      doc.text('Pengelola Residence', { align: 'right' });
+      const signatureY = doc.y;
+      
+      // Tanggal dan tempat
+      doc.fontSize(11)
+         .font('Helvetica')
+         .text(`Jakarta, ${formatTanggal(today)}`, { align: 'right' });
+      
+      doc.moveDown(0.5);
+      doc.text('Hormat kami,', { align: 'right' });
+      doc.moveDown(0.5);
+      doc.font('Helvetica-Bold')
+         .text('PENGELOLA RESIDENCE', { align: 'right' });
+      
+      doc.moveDown(3);
+      
+      // Area tanda tangan
+      const signatureWidth = 200;
+      const signatureStartX = doc.page.width - doc.page.margins.right - signatureWidth;
+      
+      doc.moveTo(signatureStartX, doc.y)
+         .lineTo(signatureStartX + signatureWidth, doc.y)
+         .strokeColor('#000000')
+         .lineWidth(1)
+         .stroke();
+      
+      doc.moveDown(0.3);
+      doc.fontSize(10)
+         .font('Helvetica')
+         .text('(Nama Lengkap & Tanda Tangan)', { align: 'right' });
+      
+      // === FOOTER ===
+      doc.moveDown(2);
+      
+      // Garis pemisah footer
+      const footerY = doc.y;
+      doc.moveTo(60, footerY)
+         .lineTo(60 + pageWidth, footerY)
+         .strokeColor('#cccccc')
+         .lineWidth(0.5)
+         .stroke();
+      
+      doc.moveDown(0.5);
+      doc.fontSize(8)
+         .font('Helvetica')
+         .fillColor('#666666')
+         .text('Surat ini diterbitkan secara elektronik dan sah tanpa tanda tangan basah.', { align: 'center' });
+      
+      doc.text(`Diterbitkan pada: ${formatTanggal(today)} ${formatWaktu(today)} WIB`, { align: 'center' });
       
       // Finalisasi dokumen
       doc.end();
