@@ -12,6 +12,7 @@ const { getTagihan, getTagihanSummary, updateTagihan, generateTagihanManual} = r
 const { getSurat, updateSurat, getDetailSurat, downloadSurat, debugSurat, testSupabaseConnection } = require("../../controllers/admin/suratController");
 const {sendNotification, notifikasiTagihan} = require("../../controllers/admin/notificationController");
 const { getAllTransaksi, getTransaksiById } = require("../../controllers/admin/transaksiController");
+const {  getGuestPermissionHistory} = require("../../controllers/guest/guestController");
 
 const router = express.Router();
 
@@ -78,5 +79,8 @@ router.post("/admin/notification/tagihan", notifikasiTagihan);
 // transaksi
 router.get("/admin/transaksi", authenticateAdmin, getAllTransaksi);
 router.get("/admin/transaksi/:id", authenticateAdmin, getTransaksiById);
+
+// guest permission history
+router.get("/admin/guest-permission/history", authenticateAdmin, getGuestPermissionHistory);
 
 module.exports = router;

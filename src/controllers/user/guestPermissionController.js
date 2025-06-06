@@ -73,8 +73,15 @@ const createGuestPermission = async (req, res) => {
         endVisitDate,
       },
     });
-
-    const permissionId = newPermission.id;
+    // simpan ke history
+    const history = await prisma.guestPermissionHistory.create({
+      data: {
+        userId: user.id,
+        guestName,
+        startVisitDate,
+        endVisitDate,
+      },
+    });
 
     // Buat isi QR sebagai JSON string
     const qrPayload = {

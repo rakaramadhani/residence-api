@@ -51,11 +51,11 @@ const scanGuestPermission = async (req, res) => {
     const isSameDate =
       today.toISOString().slice(0, 10) === start.toISOString().slice(0, 10);
 
-    if (!isSameDate) {
-      return res
-        .status(403)
-        .json({ message: "QR code is not valid for today" });
-    }
+    // if (!isSameDate) {
+    //   return res
+    //     .status(403)
+    //     .json({ message: "QR code is not valid for today" });
+    // }
 
     // Update status jika belum "arrived"
     if (permission.status !== "arrived") {
@@ -70,8 +70,8 @@ const scanGuestPermission = async (req, res) => {
           body: {
             userId: permission.user.id,
             judul: "Tamu Anda Telah Tiba",
-            isi: ` ${permission.user.username}, Tamu atas nama ${permission.guestName} telah tiba di gerbang.`,
-            tipe: " ",
+            isi: ` ${permission.user.username}, Tamu atas nama ${permission.guestName} telah tiba di pintu masuk cluster.`,
+            tipe: "Pemberithuan",
           },
         },
         {
@@ -110,4 +110,19 @@ const scanGuestPermission = async (req, res) => {
   }
 };
 
-module.exports = { scanGuestPermission };
+// get history of guest permissions
+const getGuestPermissionHistory = async (req, res) => {
+  try {
+    const allPermissions = await prisma.guestHistory.findMany({
+      include: { user: true }
+    });
+    res.status(200).json({ message: "Success", data: allPermissions });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Internal Server Error", error: error.message });
+  }
+};  
+
+module.exports = { scanGuestPermission, getGuestPermissionHistory };

@@ -38,6 +38,7 @@ model User {
   notifikasi      Notifikasi[]
   fcmToken        Fcmtoken[]
   guestPermission GuestPermission[]
+  guestHistory    GuestHistory[]
   clusterId       Int?
   clusterRef      Cluster?          @relation(fields: [clusterId], references: [id])
 }
@@ -183,6 +184,16 @@ model GuestPermission {
   endVisitDate   DateTime
   qrUrl          String?
   status         StatusTamu @default(scheduled)
+  createdAt      DateTime   @default(now())
+  user           User       @relation(fields: [userId], references: [id])
+}
+
+model GuestHistory {
+  id             String     @id @default(uuid()) @db.Uuid
+  userId         String     @db.Uuid
+  guestName      String
+  startVisitDate DateTime
+  endVisitDate   DateTime
   createdAt      DateTime   @default(now())
   user           User       @relation(fields: [userId], references: [id])
 }
