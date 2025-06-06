@@ -2,6 +2,7 @@ const { PrismaClient } = require("@prisma/client");
 const { createClient } = require("@supabase/supabase-js");
 const dotenv = require("dotenv");
 dotenv.config();
+const { sendNotification } = require("./notificationController");
 
 const prisma = new PrismaClient();
 const supabase = createClient(
@@ -51,6 +52,7 @@ const createBroadcast = async (req, res) => {
       },
     });
 
+    // Broadcast ke Supabase
     const response = await supabase.channel("all_changes").send({
       type: "broadcast",
       event: "new_broadcast",
@@ -58,6 +60,34 @@ const createBroadcast = async (req, res) => {
     });
 
     console.log("Supabase Event Sent:", response);
+
+    // Ambil semua user untuk notifikasi
+    const allUsers = await prisma.user.findMany({
+      select: { id: true }
+    });
+    const userIds = allUsers.map(user => user.id);
+
+    // Kirim notifikasi ke semua user
+    if (userIds.length > 0) {
+
+      await sendNotification(
+        {
+          body: {
+            userId: userIds,
+            judul: "Broadcast dari Admin",
+            isi: `Pemberitahuan baru "${judul}". Silakan cek aplikasi untuk detail lebih lanjut.`,
+            tipe: "Pemberitahuan"
+          }
+        },
+        {
+          status: (code) => ({
+            json: (data) => {
+              console.log("Notification sent for new broadcast:", code, data);
+            }
+          })
+        }
+      );
+    }
 
     res.status(201).json({ success: true, data: newBroadcast });
   } catch (error) {
