@@ -3,11 +3,14 @@ const bcrypt = require('bcrypt');
 const prisma = new PrismaClient();
 
 async function seeder() {
-    await seedUsers();
-    await seedClusters();
+    await seedClusters(); // Seed clusters first
+    await seedUsers(); // Then seed users with cluster references
 }
 
 async function seedUsers() {
+    // Get some clusters for user assignment
+    const clusters = await prisma.cluster.findMany({ take: 5 });
+    
     // Cek jika akun admin sudah ada
     const admin1Check = await prisma.user.findUnique({
         where: { email: "rakaramadhani2001@gmail.com"},
@@ -39,6 +42,11 @@ async function seedUsers() {
                 password: adminHashedPassword,
                 role: "admin",
                 isActive: true,
+                clusterId: clusters[0]?.id || null,
+                cluster: clusters[0]?.nama_cluster || "Calista",
+                nomor_rumah: "162A",
+                rt: "01",
+                rw: "01",
             },
         });
         console.log("✅ Admin 1 berhasil dibuat!");
@@ -55,6 +63,11 @@ async function seedUsers() {
                 password: adminHashedPassword,
                 role: "admin",
                 isActive: true,
+                clusterId: clusters[1]?.id || null,
+                cluster: clusters[1]?.nama_cluster || "Calosa",
+                nomor_rumah: "162B",
+                rt: "02",
+                rw: "01",
             },
         });
         console.log("✅ Admin 2 berhasil dibuat!");
@@ -71,6 +84,11 @@ async function seedUsers() {
                 password: penghuniHashedPassword,
                 role: "penghuni",
                 isActive: true,
+                clusterId: clusters[2]?.id || null,
+                cluster: clusters[2]?.nama_cluster || "Celeste",
+                nomor_rumah: "163C",
+                rt: "03",
+                rw: "01",
             },
         });
         console.log("✅ Penghuni 1 berhasil dibuat!");
@@ -87,6 +105,12 @@ async function seedUsers() {
                 password: penghuniHashedPassword,
                 role: "penghuni",
                 isActive: true,
+                isVerified: true,
+                clusterId: clusters[3]?.id || null,
+                cluster: clusters[3]?.nama_cluster || "Chaira",
+                nomor_rumah: "162D",
+                rt: "04",
+                rw: "01",
             },
         });
         console.log("✅ Penghuni 2 berhasil dibuat!");
