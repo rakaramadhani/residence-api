@@ -8,7 +8,7 @@ const { getEmergency, getEmergencyAlert, updateEmergency, deleteEmergency, getEm
 const { getPenghuni, getPenghuniById } = require("../../controllers/admin/penghuniController");
 const { getCluster, createCluster, updateCluster, deleteCluster } = require("../../controllers/admin/clusterController");       
 const { createPeraturan, deletePeraturan, updatePeraturan, getPeraturan } = require("../../controllers/admin/peraturanController");
-const { getTagihan, getTagihanSummary, updateTagihan, generateTagihanManual} = require("../../controllers/admin/tagihanController");
+const { getTagihan, getTagihanSummary, updateTagihan, generateTagihanManual, deleteTagihan} = require("../../controllers/admin/tagihanController");
 const { getSurat, updateSurat, getDetailSurat, downloadSurat, debugSurat, testSupabaseConnection } = require("../../controllers/admin/suratController");
 const {sendNotification, notifikasiTagihan} = require("../../controllers/admin/notificationController");
 const { getAllTransaksi, getTransaksiById } = require("../../controllers/admin/transaksiController");
@@ -63,6 +63,7 @@ router.get("/admin/tagihan",authenticateAdmin, getTagihan);
 router.put("/admin/tagihan/:id",authenticateAdmin, updateTagihan);
 router.get("/admin/tagihan/summary", authenticateAdmin, getTagihanSummary);
 router.post("/admin/tagihan/generate",authenticateAdmin, generateTagihanManual);
+router.delete("/admin/tagihan/:id",authenticateAdmin, deleteTagihan);
 
 // surat
 router.get("/admin/surat", authenticateAdmin, getSurat);

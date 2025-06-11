@@ -37,7 +37,7 @@ async function seedUsers() {
     if (!admin1Check) {
         await prisma.user.create({
             data: {
-                username: "Admin Raka",
+                username: "Rak Ramadhani",
                 email: "rakaramadhani2001@gmail.com",
                 password: adminHashedPassword,
                 role: "admin",
