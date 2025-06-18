@@ -37,7 +37,7 @@ async function seedUsers() {
     if (!admin1Check) {
         await prisma.user.create({
             data: {
-                username: "Admin Raka",
+                username: "Rak Ramadhani",
                 email: "rakaramadhani2001@gmail.com",
                 password: adminHashedPassword,
                 role: "admin",
@@ -45,8 +45,8 @@ async function seedUsers() {
                 clusterId: clusters[0]?.id || null,
                 cluster: clusters[0]?.nama_cluster || "Calista",
                 nomor_rumah: "162A",
-                rt: "01",
-                rw: "01",
+                rt: "RT01",
+                rw: "RW01",
             },
         });
         console.log("✅ Admin 1 berhasil dibuat!");
@@ -66,8 +66,8 @@ async function seedUsers() {
                 clusterId: clusters[1]?.id || null,
                 cluster: clusters[1]?.nama_cluster || "Calosa",
                 nomor_rumah: "162B",
-                rt: "02",
-                rw: "01",
+                rt: "RT02",
+                rw: "RW01",
             },
         });
         console.log("✅ Admin 2 berhasil dibuat!");
@@ -87,8 +87,8 @@ async function seedUsers() {
                 clusterId: clusters[2]?.id || null,
                 cluster: clusters[2]?.nama_cluster || "Celeste",
                 nomor_rumah: "163C",
-                rt: "03",
-                rw: "01",
+                rt: "RT03",
+                rw: "RW01",
             },
         });
         console.log("✅ Penghuni 1 berhasil dibuat!");
@@ -109,8 +109,8 @@ async function seedUsers() {
                 clusterId: clusters[3]?.id || null,
                 cluster: clusters[3]?.nama_cluster || "Chaira",
                 nomor_rumah: "162D",
-                rt: "04",
-                rw: "01",
+                rt: "RT04",
+                rw: "RW01",
             },
         });
         console.log("✅ Penghuni 2 berhasil dibuat!");
