@@ -102,11 +102,7 @@ const generateSuratPerizinan = async (data) => {
       // Logo/Header utama
       doc.fontSize(18)
          .font('Times-Bold')
-         .text('PENGELOLA RESIDENCE', { align: 'center' });
-      
-      doc.fontSize(16)
-         .font('Times-Bold')
-         .text('PERUMAHAN CHERRY FIELD', { align: 'center' });
+         .text('PENGELOLA PERUMAHAN CHERRY FIELD', { align: 'center' });
       
       doc.fontSize(10)
          .font('Times-Roman')
@@ -142,14 +138,10 @@ const generateSuratPerizinan = async (data) => {
       // Nomor surat formal
       const currentDate = new Date();
       const nomorSurat = `${data.id.substring(0, 8).toUpperCase()}/PGF/${currentDate.getFullYear()}`;
-      
-      doc.moveDown(1);
       doc.fontSize(11)
          .font('Times-Roman')
          .text(`Nomor: ${nomorSurat}`, { align: 'center' });
-      
-      doc.moveDown(2);
-      
+         
       // === ISI SURAT ===
       doc.fontSize(11)
          .font('Times-Roman')
