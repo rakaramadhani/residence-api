@@ -146,11 +146,24 @@ const checkUsername = async (req, res) => {
 
 // logout
 const logout = async (req, res) => {
+  const { fcmToken, user_id } = req.body;
+
   try {
+    if (fcmToken) {
+      await prisma.fcmtoken.deleteMany({
+        where: {
+          token: fcmToken,
+          userId: user_id, // pastikan req.user.id sudah di-set dari auth middleware
+        },
+      });
+    }
+
     res.clearCookie("token");
-    return res.status(200).json({ message: "Logout successful" });
+    return res
+      .status(200)
+      .json({ message: "Logout successful, FCM token removed" });
   } catch (error) {
-    console.error(error);
+    console.error("Logout error:", error);
     return res.status(500).json({ message: "Server error" });
   }
 };

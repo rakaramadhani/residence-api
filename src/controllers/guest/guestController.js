@@ -63,27 +63,26 @@ const scanGuestPermission = async (req, res) => {
         where: { id },
         data: { status: "arrived" },
       });
-
-      // Kirim notifikasi ke penghuni
-      await sendNotification(
-        {
-          body: {
-            userId: permission.user.id,
-            judul: "Tamu Anda Telah Tiba",
-            isi: ` ${permission.user.username}, Tamu atas nama ${permission.guestName} telah tiba di pintu masuk cluster.`,
-            tipe: "Pemberithuan",
-          },
-        },
-        {
-          status: (code) => ({
-            json: (data) => {
-              // Bisa log response jika mau, atau kosongkan saja
-              console.log("Fake res status", code, data);
-            },
-          }),
-        }
-      );
     }
+
+    // Kirim notifikasi ke penghuni (selalu kirim)
+    await sendNotification(
+      {
+        body: {
+          userId: permission.user.id,
+          judul: "Tamu Anda Telah Tiba",
+          isi: ` ${permission.user.username}, Tamu atas nama ${permission.guestName} telah tiba di pintu masuk cluster.`,
+          tipe: "Pemberithuan",
+        },
+      },
+      {
+        status: (code) => ({
+          json: (data) => {
+            console.log("Fake res status", code, data);
+          },
+        }),
+      }
+    );
 
     // Kirim data ke scanner (misal security)
     return res.status(200).json({
@@ -109,6 +108,7 @@ const scanGuestPermission = async (req, res) => {
       .json({ message: "Internal Server Error", error: error.message });
   }
 };
+
 
 // get history of guest permissions
 const getGuestPermissionHistory = async (req, res) => {

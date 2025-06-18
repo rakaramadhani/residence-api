@@ -73,8 +73,10 @@ const createGuestPermission = async (req, res) => {
         endVisitDate,
       },
     });
+
+    const permissionId = newPermission.id;
     // simpan ke history
-    const history = await prisma.guestPermissionHistory.create({
+    const history = await prisma.guestHistory.create({
       data: {
         userId: user.id,
         guestName,
