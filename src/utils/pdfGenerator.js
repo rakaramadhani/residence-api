@@ -1,6 +1,7 @@
 const PDFDocument = require('pdfkit');
 const fs = require('fs-extra');
 const path = require('path');
+const QRCode = require('qrcode');
 const { uploadFile } = require('./supabaseStorage');
 
 // Buat direktori jika belum ada
@@ -45,6 +46,21 @@ const formatWaktu = (date) => {
  */
 const generateSuratPerizinan = async (data) => {
   try {
+    // Generate QR Code untuk validasi surat terlebih dahulu
+    // URL akan mengarah ke frontend Next.js yang berjalan di port 3000
+    const validationUrl = `${'https://residence-admin.vercel.app/'}/validate-surat/${data.id}`;
+    const qrCodeDataUrl = await QRCode.toDataURL(validationUrl, {
+      width: 100,
+      margin: 1,
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF'
+      }
+    });
+    
+    // Convert base64 to buffer untuk QR code
+    const qrCodeBuffer = Buffer.from(qrCodeDataUrl.split(',')[1], 'base64');
+
     return new Promise((resolve, reject) => {
       // Nama file
       const fileName = `surat_perizinan_${data.id}.pdf`;
@@ -85,18 +101,20 @@ const generateSuratPerizinan = async (data) => {
       
       // Logo/Header utama
       doc.fontSize(18)
-         .font('Helvetica-Bold')
+         .font('Times-Bold')
          .text('PENGELOLA RESIDENCE', { align: 'center' });
       
       doc.fontSize(16)
-         .font('Helvetica-Bold')
-         .text('KOMPLEKS PERUMAHAN JAKARTA', { align: 'center' });
+         .font('Times-Bold')
+         .text('PERUMAHAN CHERRY FIELD', { align: 'center' });
       
       doc.fontSize(10)
-         .font('Helvetica')
-         .text('Jl. Residence No. 123, Jakarta Selatan 12345', { align: 'center' });
+         .font('Times-Roman')
+         .text('Jl. Ciganitri, Desa Cipagalo, Kecamatan Bojongsoang,', { align: 'center' });
       
-      doc.text('Telp: (021) 1234-5678 | Email: info@residence.com', { align: 'center' });
+      doc.text('Kabupaten Bandung, Jawa Barat 40287', { align: 'center' });
+      
+      doc.text('Telp: (022) 1234-5678 | Email: info@cherryfield.com', { align: 'center' });
       
       // Garis pemisah header
       doc.moveDown(1);
@@ -118,7 +136,7 @@ const generateSuratPerizinan = async (data) => {
       
       // === JUDUL SURAT ===
       doc.fontSize(14)
-         .font('Helvetica-Bold')
+         .font('Times-Bold')
          .text('SURAT PERIZINAN PENGGUNAAN FASILITAS', { align: 'center' });
       
       // Nomor surat formal
@@ -127,14 +145,14 @@ const generateSuratPerizinan = async (data) => {
       
       doc.moveDown(1);
       doc.fontSize(11)
-         .font('Helvetica')
+         .font('Times-Roman')
          .text(`Nomor: ${nomorSurat}`, { align: 'center' });
       
       doc.moveDown(2);
       
       // === ISI SURAT ===
       doc.fontSize(11)
-         .font('Helvetica')
+         .font('Times-Roman')
          .text('Yang bertanda tangan di bawah ini, Pengelola Kompleks Residence, dengan ini memberikan izin kepada:', { align: 'justify' });
       
       doc.moveDown(1.5);
@@ -176,14 +194,14 @@ const generateSuratPerizinan = async (data) => {
         // Label
         doc.fillColor('#000000')
            .fontSize(10)
-           .font('Helvetica')
+           .font('Times-Roman')
            .text(row[0], leftMargin, currentTableY, { continued: false });
         
         // Titik dua
         doc.text(':', colonPosition, currentTableY);
         
         // Nilai
-        doc.font('Helvetica-Bold')
+        doc.font('Times-Bold')
            .text(row[1], valuePosition, currentTableY, { 
              width: pageWidth - (valuePosition - 60) - 20,
              align: 'left'
@@ -195,9 +213,14 @@ const generateSuratPerizinan = async (data) => {
       doc.y = tableStartY + tableHeight + 20;
       
       // === KETENTUAN DAN SYARAT ===
+      // Gunakan margin yang sama dengan tabel untuk konsistensi
       doc.fontSize(11)
-         .font('Helvetica')
-         .text('Untuk menggunakan fasilitas tersebut dengan ketentuan sebagai berikut:', { align: 'justify' });
+         .font('Times-Roman')
+         .text('Untuk menggunakan fasilitas tersebut dengan ketentuan sebagai berikut:', 
+               leftMargin - 20, doc.y, { 
+                 align: 'left',
+                 width: pageWidth - (leftMargin - 20) * 2
+               });
       
       doc.moveDown(1);
       
@@ -211,11 +234,13 @@ const generateSuratPerizinan = async (data) => {
       
       syaratList.forEach((syarat, index) => {
         doc.fontSize(10)
-           .font('Helvetica')
-           .text(`${index + 1}. ${syarat}`, { 
-             align: 'justify',
-             indent: 20
-           });
+           .font('Times-Roman')
+           .text(`${index + 1}. ${syarat}`, 
+                  leftMargin - 20, doc.y, {
+                    align: 'left',
+                    width: pageWidth - (leftMargin - 20) * 2,
+                    lineGap: 2
+                  });
         doc.moveDown(0.5);
       });
       
@@ -223,62 +248,74 @@ const generateSuratPerizinan = async (data) => {
       
       // === PENUTUP ===
       doc.fontSize(11)
-         .font('Helvetica')
-         .text('Demikian surat izin ini dibuat untuk dapat dipergunakan sebagaimana mestinya.', { align: 'justify' });
-      
-      doc.moveDown(2);
+         .font('Times-Roman')
+         .text('Demikian surat izin ini dibuat untuk dapat dipergunakan sebagaimana mestinya.', 
+               leftMargin - 20, doc.y, { 
+                 align: 'left',
+                 width: pageWidth - (leftMargin - 20) * 2 
+               });
+
+      doc.moveDown(0.5);
       
       // === TANDA TANGAN ===
-      const today = new Date();
-      const signatureY = doc.y;
-      
-      // Tanggal dan tempat
-      doc.fontSize(11)
-         .font('Helvetica')
-         .text(`Jakarta, ${formatTanggal(today)}`, { align: 'right' });
-      
-      doc.moveDown(0.5);
-      doc.text('Hormat kami,', { align: 'right' });
-      doc.moveDown(0.5);
-      doc.font('Helvetica-Bold')
-         .text('PENGELOLA RESIDENCE', { align: 'right' });
-      
-      doc.moveDown(3);
-      
-      // Area tanda tangan
-      const signatureWidth = 200;
-      const signatureStartX = doc.page.width - doc.page.margins.right - signatureWidth;
-      
-      doc.moveTo(signatureStartX, doc.y)
-         .lineTo(signatureStartX + signatureWidth, doc.y)
-         .strokeColor('#000000')
-         .lineWidth(1)
-         .stroke();
-      
-      doc.moveDown(0.3);
-      doc.fontSize(10)
-         .font('Helvetica')
-         .text('(Nama Lengkap & Tanda Tangan)', { align: 'right' });
-      
-      // === FOOTER ===
-      doc.moveDown(2);
-      
-      // Garis pemisah footer
-      const footerY = doc.y;
-      doc.moveTo(60, footerY)
-         .lineTo(60 + pageWidth, footerY)
-         .strokeColor('#cccccc')
-         .lineWidth(0.5)
-         .stroke();
-      
-      doc.moveDown(0.5);
-      doc.fontSize(8)
-         .font('Helvetica')
-         .fillColor('#666666')
-         .text('Surat ini diterbitkan secara elektronik dan sah tanpa tanda tangan basah.', { align: 'center' });
-      
-      doc.text(`Diterbitkan pada: ${formatTanggal(today)} ${formatWaktu(today)} WIB`, { align: 'center' });
-      
+      // === TANDA TANGAN DAN QR CODE ===
+const today = new Date();
+doc.moveDown(2);
+
+// Tempat dan tanggal
+doc.fontSize(11)
+   .font('Times-Roman')
+   .text(`Bandung, ${formatTanggal(today)}`, { align: 'right' });
+
+doc.moveDown(1);
+doc.font('Times-Bold')
+   .text('PENGELOLA PERUMAHAN', { align: 'right' })
+   .text('CHERRY FIELD', { align: 'right' });
+
+doc.moveDown(1);
+
+// === QR CODE DI BAWAH TULISAN TANDA TANGAN ===
+const qrCodeSize = 70;
+// Posisikan QR code di sebelah kanan, sejajar dengan tulisan tanda tangan
+const qrCodeX = doc.page.width - doc.page.margins.right - qrCodeSize;
+const qrCodeY = doc.y;
+
+doc.image(qrCodeBuffer, qrCodeX, qrCodeY, {
+  width: qrCodeSize,
+  height: qrCodeSize
+});
+
+// Pindahkan posisi Y ke bawah QR code untuk melanjutkan konten
+doc.y = Math.max(doc.y, qrCodeY + qrCodeSize + 20);
+
+// === FOOTER ===
+const footerY = doc.y;
+doc.moveTo(60, footerY)
+   .lineTo(60 + pageWidth, footerY)
+   .strokeColor('#cccccc')
+   .lineWidth(0.5)
+   .stroke();
+
+doc.moveDown(0.5);
+doc.fontSize(8)
+   .font('Times-Roman')
+   .fillColor('#666666')
+   .text('Surat ini diterbitkan secara elektronik dan sah tanpa tanda tangan basah.', 
+         60, doc.y, { 
+           align: 'center',
+           width: pageWidth
+         });
+doc.text(`Diterbitkan pada: ${formatTanggal(today)} ${formatWaktu(today)} WIB`, 
+         60, doc.y, { 
+           align: 'center',
+           width: pageWidth
+         });
+doc.text(`ID Validasi: ${data.id}`, 
+         60, doc.y, { 
+           align: 'center',
+           width: pageWidth
+         });
+
       // Finalisasi dokumen
       doc.end();
     });
