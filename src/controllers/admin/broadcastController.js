@@ -75,7 +75,7 @@ const createBroadcast = async (req, res) => {
           body: {
             userId: userIds,
             judul: "Broadcast dari Admin",
-            isi: `Pemberitahuan baru "${judul}". Silakan cek aplikasi untuk detail lebih lanjut.`,
+            isi: `Pemberitahuan baru. Silakan cek aplikasi untuk detail lebih lanjut.`,
             tipe: "Pemberitahuan"
           }
         },
@@ -141,4 +141,15 @@ const updateBroadcast = async (req, res) => {
   }
 };
 
-module.exports = { broadcast, updateBroadcast, createBroadcast };
+// Delete Broadcast
+const deleteBroadcast = async (req, res) => {
+  const { id } = req.params;
+  try {
+    await prisma.broadcast.delete({ where: { id: id } });
+    res.status(200).json({ success: true, message: "Broadcast deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = { broadcast, updateBroadcast, createBroadcast, deleteBroadcast };

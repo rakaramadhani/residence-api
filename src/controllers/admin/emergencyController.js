@@ -50,17 +50,57 @@ const getEmergencyAlert = async (req, res) => {
 const updateEmergency = async (req, res) => {
     try {
         const { id } = req.params;
-        const { kategori, detail_kejadian } = req.body;
+        const { kategori, detail_kejadian, status } = req.body;
 
         const updatedEmergency = await prisma.emergency.update({
             where: { id },
-            data: { kategori, detail_kejadian }
+            data: { kategori, detail_kejadian, status }
         });
 
         res.status(200).json({ message: "Success", data: updatedEmergency });
         
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+}
+
+// Endpoint khusus untuk mengubah status emergency menjadi "ditindaklanjuti"
+const markEmergencyAsHandled = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Cek apakah emergency dengan id tersebut ada
+        const existingEmergency = await prisma.emergency.findUnique({
+            where: { id },
+            include: { user: true }
+        });
+
+        if (!existingEmergency) {
+            return res.status(404).json({ 
+                message: "Emergency tidak ditemukan" 
+            });
+        }
+
+        // Update status menjadi "ditindaklanjuti"
+        const updatedEmergency = await prisma.emergency.update({
+            where: { id },
+            data: { 
+                status: "ditindaklanjuti",
+                updatedAt: new Date()
+            },
+            include: { user: true }
+        });
+
+        res.status(200).json({ 
+            message: "Status emergency berhasil diubah menjadi ditindaklanjuti", 
+            data: updatedEmergency 
+        });
+        
+    } catch (error) {
+        res.status(500).json({ 
+            message: "Internal Server Error", 
+            error: error.message 
+        });
     }
 }
 
@@ -119,4 +159,4 @@ const getEmergencyById = async (req, res) => {
 }
 
 
-module.exports = {getEmergency, getEmergencyAlert, initEmergencySubscription, updateEmergency, deleteEmergency, getEmergencyById};
+module.exports = {getEmergency, getEmergencyAlert, initEmergencySubscription, updateEmergency, deleteEmergency, getEmergencyById, markEmergencyAsHandled};

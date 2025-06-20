@@ -6,7 +6,8 @@ const { PrismaClient } = require("@prisma/client");
 // Pastikan env terbaca
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY
+  process.env.SUPABASE_ANON_KEY,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 const prisma = new PrismaClient();
 
@@ -26,7 +27,6 @@ const createEmergency = async (req, res) => {
         latitude,
         longitude,
       },
-      // ✅ TAMBAHKAN include untuk dapat user data
       include: {
         user: true
       }

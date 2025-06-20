@@ -110,19 +110,39 @@ const scanGuestPermission = async (req, res) => {
 };
 
 
-// get history of guest permissions
+// 
 const getGuestPermissionHistory = async (req, res) => {
   try {
-    const allPermissions = await prisma.guestHistory.findMany({
-      include: { user: true }
+    const allHistory = await prisma.guestHistory.findMany({
+      include: { 
+        user: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            phone: true,
+            cluster: true,
+            nomor_rumah: true,
+            rt: true,
+            rw: true,
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
     });
-    res.status(200).json({ message: "Success", data: allPermissions });
+
+    res.status(200).json({ 
+      message: "Success", 
+      data: allHistory 
+    });
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching guest history:", error);
     return res
       .status(500)
       .json({ message: "Internal Server Error", error: error.message });
   }
-};  
+};
 
 module.exports = { scanGuestPermission, getGuestPermissionHistory };
