@@ -3,7 +3,7 @@ const { authenticateAdmin } = require("../../middleware/authAdmin");
 const upload = require("../../middleware/multer");
 const { users, createUser, detail, verifikasiUser, updateUser, getClustersForDropdown, deleteUser } = require("../../controllers/admin/usersController");
 const { pengaduan, updatePengaduan, getPengaduanById } = require("../../controllers/admin/pengaduanController");
-const { broadcast, updateBroadcast,createBroadcast} = require("../../controllers/admin/broadcastController");
+const { broadcast, updateBroadcast,createBroadcast, deleteBroadcast} = require("../../controllers/admin/broadcastController");
 const { getEmergency, getEmergencyAlert, updateEmergency, deleteEmergency, getEmergencyById, markEmergencyAsHandled} = require("../../controllers/admin/emergencyController");
 const { getPenghuni, getPenghuniById } = require("../../controllers/admin/penghuniController");
 const { getCluster, createCluster, updateCluster, deleteCluster } = require("../../controllers/admin/clusterController");       
@@ -44,6 +44,7 @@ router.delete("/admin/peraturan/:id", authenticateAdmin, deletePeraturan);
 router.get("/admin/broadcast", authenticateAdmin, broadcast);
 router.post("/admin/:user_id/broadcast", upload.single("foto"), authenticateAdmin, createBroadcast);
 router.put("/admin/broadcast/:id", authenticateAdmin, updateBroadcast);
+router.delete("/admin/broadcast/:id", authenticateAdmin, deleteBroadcast);
 
 // emergency
 router.get("/admin/emergency", authenticateAdmin, getEmergency);
