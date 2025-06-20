@@ -156,34 +156,52 @@ const createUser = async (req, res) => {
       },
     });
 
-    // Kirim email notifikasi
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: user.email,
-      subject: "AKUN PENGHUNI BARU",
-      text: `Selamat datang di sistem kami, ${user.email}.
+    // Kirim email notifikasi (dengan error handling)
+    let emailSent = false;
+    let emailError = null;
+    
+    try {
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: user.email,
+        subject: "AKUN PENGHUNI BARU",
+        text: `Selamat datang di sistem kami, ${user.email}.
 
     Akun Anda telah berhasil dibuat dengan detail berikut:
     - Email: ${user.email}
     - Password: ${password}
 
     Silakan gunakan kredensial di atas untuk masuk ke sistem kami.`,
-    };
+      };
 
-    // Kirim email
-    await transporter.sendMail(mailOptions);
+      // Kirim email
+      await transporter.sendMail(mailOptions);
+      emailSent = true;
+      console.log("Email berhasil dikirim ke:", user.email);
+    } catch (emailErr) {
+      emailError = emailErr.message;
+      console.error("Error mengirim email:", emailErr.message);
+    }
 
     // Notifikasi melalui Supabase
-    const response = await supabase.channel("all_changes").send({
-      type: "broadcast",
-      event: "user",
-      payload: user,
-    });
+    try {
+      const response = await supabase.channel("all_changes").send({
+        type: "broadcast",
+        event: "user",
+        payload: user,
+      });
+    } catch (supabaseErr) {
+      console.error("Error Supabase notification:", supabaseErr.message);
+    }
 
     res.status(201).json({
       success: true,
-      message: "User berhasil dibuat",
+      message: emailSent 
+        ? "User berhasil dibuat dan email notifikasi terkirim"
+        : `User berhasil dibuat, namun email gagal terkirim: ${emailError}`,
       data: user,
+      emailSent: emailSent,
+      emailError: emailError
     });
   } catch (error) {
     if (error.code === "P2002") {
