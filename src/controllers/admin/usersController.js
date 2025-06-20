@@ -72,7 +72,8 @@ const users = async (req, res) => {
                         nama_cluster: true,
                         nominal_tagihan: true
                     }
-                }
+                },
+                penghuni: true
             }
         });
         res.status(200).json({ data: allUsers });
