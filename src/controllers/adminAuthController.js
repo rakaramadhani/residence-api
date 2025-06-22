@@ -144,7 +144,7 @@ const forgotPassword = async (req, res) => {
             { expiresIn: "1h" } // Token berlaku selama 1 jam
         );
 
-        const resetLink = `$https://residence-admin.vercel.app/reset-password?token=${token}`;
+        const resetLink = `https://residence-admin.vercel.app/reset-password?token=${token}`;
 
         // Konfigurasi email
         const mailOptions = {
