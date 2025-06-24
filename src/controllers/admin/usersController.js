@@ -229,6 +229,7 @@ const detail = async (req, res) => {
       },
       include: {
         clusterRef: true,
+        penghuni: true, // Include data penghuni jika ada
       },
     });
     if (!user) {
