@@ -7,7 +7,7 @@ const {tokenizer, checkTransaksi, handleNotification} = require("../../controlle
 const { getSurat, createSurat, deleteSurat, downloadSurat, getUrlSurat, validateSurat, previewSuratPDF } = require("../../controllers/user/suratController");
 const { getTagihan, getRiwayatTagihan } = require("../../controllers/user/tagihanController");
 const { getPeraturan } = require("../../controllers/user/peraturanController");
-const { createEmergency, getEmergency } = require("../../controllers/user/emergencyController");
+const { createEmergency, getEmergency, testSupabaseRealtime } = require("../../controllers/user/emergencyController");
 const { createFCM } = require(".././../notification/fcm");
 const {scanGuestPermission} = require("../../controllers/guest/guestController");
 const {
@@ -58,6 +58,9 @@ router.delete("/user/:user_id/broadcast/:id",authenticatePenghuni,checkVerified,
 // emergency
 router.post("/user/:user_id/emergency",authenticatePenghuni,checkVerified, createEmergency);
 router.get("/user/emergency", authenticatePenghuni,checkVerified, getEmergency);
+
+// ✅ TAMBAHAN: Test endpoint untuk debugging Supabase realtime
+router.get("/user/test/supabase-realtime", testSupabaseRealtime);
  
 // midtrans 
 router.post("/user/payment/tokenizer",authenticatePenghuni,checkVerified, tokenizer);

@@ -1,5 +1,6 @@
 const cron = require('node-cron');
 const { PrismaClient } = require('@prisma/client');
+const { getJakartaDate, getJakartaISO } = require('../../utils/timezone');
 const prisma = new PrismaClient();
 
 const getTagihan = async (req, res) => {
@@ -87,8 +88,12 @@ const generateTagihanBulanan = async () => {
       return;
     }
 
-    const bulan = new Date().getMonth() + 1;
-    const tahun = new Date().getFullYear();
+    // Gunakan waktu Jakarta/WIB untuk menentukan bulan dan tahun
+    const jakartaDate = getJakartaDate();
+    const bulan = jakartaDate.getMonth() + 1;
+    const tahun = jakartaDate.getFullYear();
+    
+    console.log(`Generate tagihan untuk bulan ${bulan}/${tahun} (waktu Jakarta: ${jakartaDate.toISOString()})`);
     const tagihanList = [];
 
     for (const user of users) {
@@ -129,10 +134,11 @@ const generateTagihanBulanan = async () => {
   }
 };
   
-  // Jadwalkan cron job untuk berjalan setiap tanggal 1 bulan pada jam 00:01
+  // Jadwalkan cron job untuk berjalan setiap tanggal 1 bulan pada jam 07:30 WIB
+  // Ini akan memastikan tagihan dibuat pada bulan yang tepat menurut waktu Indonesia
   // Format cron: minute hour day-of-month month day-of-week
-  const schedulerTagihan = cron.schedule('1 0 1 * *', generateTagihanBulanan, {
-    timezone: "Asia/Jakarta" // Sesuaikan dengan timezone Indonesia
+  const schedulerTagihan = cron.schedule('30 7 1 * *', generateTagihanBulanan, {
+    timezone: "Asia/Jakarta" // Timezone Indonesia
   });
   
   // Fungsi untuk memulai scheduler
